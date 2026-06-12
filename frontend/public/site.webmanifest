@@ -1,0 +1,14 @@
+{
+  "name": "Schedulix",
+  "short_name": "Schedulix",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#0a192f",
+  "background_color": "#0a192f",
+  "display": "standalone"
+}
