@@ -13,7 +13,10 @@ const GanttChart = ({ segments = [], currentTime = 0, totalTime = 0, processes =
       const currentPos = currentTime * 60;
 
       if (currentPos > containerWidth / 2) {
-        containerRef.current.scrollLeft = currentPos - containerWidth / 2;
+        containerRef.current.scrollTo({
+          left: currentPos - containerWidth / 2,
+          behavior: 'smooth'
+        });
       }
     }
   }, [currentTime]);
@@ -36,6 +39,11 @@ const GanttChart = ({ segments = [], currentTime = 0, totalTime = 0, processes =
     timeMarkers.push(i);
   }
 
+  const tickMarkers = [];
+  for (let i = 0; i <= Math.ceil(maxTime) * 2; i++) {
+    tickMarkers.push(i * 0.5);
+  }
+
   return (
     <div className="glass p-6 min-h-[240px] overflow-hidden relative">
       <div className="flex items-center justify-between mb-8">
@@ -50,15 +58,17 @@ const GanttChart = ({ segments = [], currentTime = 0, totalTime = 0, processes =
 
       <div
         ref={containerRef}
-        className="w-full overflow-x-auto pb-8 custom-scrollbar scroll-smooth relative"
+        className="w-full overflow-x-auto pb-8 custom-scrollbar relative"
       >
         <div className="relative h-32 min-w-max pr-12 pt-6">
           {/* Time Scale Markers (Top) */}
           <div className="absolute top-0 left-0 w-full h-4 flex items-start pointer-events-none">
-            {timeMarkers.map(m => (
+            {tickMarkers.map(m => (
               <div key={m} className="absolute flex flex-col items-center" style={{ left: `${m * 60}px` }}>
-                <div className="w-[1px] h-2 bg-white/20" />
-                <span className="text-[9px] font-mono text-brand-gray mt-1">{m}</span>
+                <div className={`w-[1px] ${m % 1 === 0 ? 'h-2.5 bg-white/40' : 'h-1.5 bg-white/20'}`} />
+                {m % 1 === 0 && (
+                  <span className="text-[9px] font-mono text-brand-gray mt-1">{m}</span>
+                )}
               </div>
             ))}
           </div>
@@ -68,6 +78,9 @@ const GanttChart = ({ segments = [], currentTime = 0, totalTime = 0, processes =
             {segments.filter(Boolean).map((segment, index) => {
               const isVisible = (segment.startTime ?? Infinity) <= currentTime;
               if (!isVisible) return null;
+
+              // Context switch indicator (vertical line)
+              const showContextSwitch = index > 0 && !segment.isIdle && !segments[index-1].isIdle;
 
               const duration = Math.min(segment.endTime || 0, currentTime) - (segment.startTime || 0);
               const width = Math.max(0, duration * 60);
@@ -82,6 +95,9 @@ const GanttChart = ({ segments = [], currentTime = 0, totalTime = 0, processes =
                   onMouseEnter={() => setHoveredSegment({ ...segment, originalProcess })}
                   onMouseLeave={() => setHoveredSegment(null)}
                 >
+                  {showContextSwitch && (
+                    <div className="absolute left-0 top-0 bottom-0 w-px border-l border-dashed border-white/30 z-0" />
+                  )}
                   {/* Segment Box */}
                   <motion.div
                     initial={{ opacity: 0, scaleX: 0 }}
@@ -154,12 +170,24 @@ const GanttChart = ({ segments = [], currentTime = 0, totalTime = 0, processes =
                 <span className="text-[9px] text-brand-gray uppercase">Duration</span>
                 <span className="text-xs font-mono">{(hoveredSegment.endTime - hoveredSegment.startTime).toFixed(1)}s</span>
               </div>
+              {!hoveredSegment.isIdle && (
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-brand-gray uppercase">Remaining</span>
+                  <span className="text-xs font-mono">{Math.max(0, hoveredSegment.endTime - Math.max(hoveredSegment.startTime, currentTime)).toFixed(1)}s</span>
+                </div>
+              )}
               {!hoveredSegment.isIdle && hoveredSegment.originalProcess && (
                 <div className="flex flex-col">
                   <span className="text-[9px] text-brand-gray uppercase">Arrival</span>
                   <span className="text-xs font-mono">{hoveredSegment.originalProcess.arrivalTime}s</span>
                 </div>
               )}
+              <div className="flex flex-col">
+                <span className="text-[9px] text-brand-gray uppercase">Status</span>
+                <span className="text-[10px] font-bold text-brand-blue uppercase">
+                  {hoveredSegment.endTime <= currentTime ? 'Finished' : hoveredSegment.startTime <= currentTime ? 'Running' : 'Scheduled'}
+                </span>
+              </div>
             </div>
           </motion.div>
         )}

@@ -46,23 +46,47 @@ const StatCard = ({ label, value, unit, icon: Icon, description, isPlaceholder }
   </div>
 );
 
-const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle' }) => {
+const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle', currentTime = 0 }) => {
   const isSimulationStarted = playbackState !== 'idle';
   const isFinished = playbackState === 'finished';
 
   const [stats, setStats] = useState([
-    { label: "Avg. Waiting", value: "—", unit: "ms", icon: Clock, description: "Average time in ready queue" },
-    { label: "Avg. Turnaround", value: "—", unit: "ms", icon: Layers, description: "Time from arrival to finish" },
+    { label: "Avg. Waiting", value: "—", unit: "s", icon: Clock, description: "Average time in ready queue" },
+    { label: "Avg. Turnaround", value: "—", unit: "s", icon: Layers, description: "Time from arrival to finish" },
     { label: "Throughput", value: "—", unit: "p/s", icon: Zap, description: "Processes finished per second" },
     { label: "Utilization", value: "Run simulation", unit: "%", icon: Activity, description: "CPU active time percentage" }
   ]);
 
   useEffect(() => {
-    if (isSimulationStarted && Array.isArray(results) && results.length > 0 && metrics && metrics.totalTime > 0) {
-      const avgWaiting = results.reduce((acc, r) => acc + (r.waitingTime || 0), 0) / results.length;
-      const avgTurnaround = results.reduce((acc, r) => acc + (r.turnaroundTime || 0), 0) / results.length;
-      const throughput = results.length / metrics.totalTime;
-      const utilization = Math.max(0, Math.min(100, ((metrics.totalTime - (metrics.idleTime || 0)) / metrics.totalTime) * 100));
+    if (isSimulationStarted && Array.isArray(results) && results.length > 0 && metrics && currentTime > 0) {
+      const completedResults = results.filter(r => (r.endTime ?? Infinity) <= currentTime);
+
+      const liveMetrics = results.map(process => {
+        const segments = metrics.segments?.filter(s => s.processId === process.id) || [];
+        const executedBurst = segments
+          .filter(s => s.startTime < currentTime)
+          .reduce((acc, s) => acc + (Math.min(s.endTime, currentTime) - s.startTime), 0);
+
+        if (currentTime < process.arrivalTime) return { waitingTime: 0, turnaroundTime: 0 };
+
+        const isCompleted = (process.endTime ?? Infinity) <= currentTime;
+        if (isCompleted) return { waitingTime: process.waitingTime, turnaroundTime: process.turnaroundTime };
+
+        const turnaroundTime = currentTime - process.arrivalTime;
+        const waitingTime = turnaroundTime - executedBurst;
+        return { waitingTime, turnaroundTime };
+      });
+
+      const avgWaiting = liveMetrics.reduce((acc, m) => acc + m.waitingTime, 0) / results.length;
+      const avgTurnaround = liveMetrics.reduce((acc, m) => acc + m.turnaroundTime, 0) / results.length;
+      const throughput = completedResults.length / currentTime;
+
+      const segmentsArray = Array.isArray(metrics.segments) ? metrics.segments : [];
+      const idleTimeSoFar = segmentsArray
+        .filter(s => s.isIdle && s.startTime < currentTime)
+        .reduce((acc, s) => acc + (Math.min(s.endTime, currentTime) - s.startTime), 0) || 0;
+
+      const utilization = Math.max(0, Math.min(100, ((currentTime - idleTimeSoFar) / currentTime) * 100));
 
       setStats(prev => [
         { ...prev[0], value: avgWaiting },
@@ -72,13 +96,13 @@ const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle' 
       ]);
     } else {
         setStats([
-            { label: "Avg. Waiting", value: "—", unit: "ms", icon: Clock, description: "Average time in ready queue" },
-            { label: "Avg. Turnaround", value: "—", unit: "ms", icon: Layers, description: "Time from arrival to finish" },
+            { label: "Avg. Waiting", value: "—", unit: "s", icon: Clock, description: "Average time in ready queue" },
+            { label: "Avg. Turnaround", value: "—", unit: "s", icon: Layers, description: "Time from arrival to finish" },
             { label: "Throughput", value: "—", unit: "p/s", icon: Zap, description: "Processes finished per second" },
             { label: "Utilization", value: "Run simulation", unit: "%", icon: Activity, description: "CPU active time percentage" }
         ]);
     }
-  }, [results, metrics, isSimulationStarted]);
+  }, [results, metrics, isSimulationStarted, currentTime]);
 
   return (
     <div className="glass p-6">
@@ -117,7 +141,12 @@ const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle' 
             <div className="flex items-center space-x-6">
                 <div className="flex flex-col">
                     <span className="text-[9px] text-brand-gray/40 font-black uppercase tracking-widest mb-1">Context Switches</span>
-                    <span className="text-xl font-mono font-bold text-white">{metrics.contextSwitches ?? 0}</span>
+                    <span className="text-xl font-mono font-bold text-white">
+                      {(metrics.segments || [])
+                        .filter((s, i, arr) => i > 0 && s.startTime < currentTime && !s.isIdle && !arr[i-1].isIdle)
+                        .length ?? 0
+                      }
+                    </span>
                 </div>
                 <div className="flex flex-col">
                     <span className="text-[9px] text-brand-gray/40 font-black uppercase tracking-widest mb-1">Total Simulation Time</span>

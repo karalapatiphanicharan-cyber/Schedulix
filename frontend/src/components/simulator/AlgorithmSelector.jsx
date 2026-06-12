@@ -5,41 +5,51 @@ import { motion, AnimatePresence } from 'framer-motion';
 const ALGO_DETAILS = {
   FCFS: {
     description: "Executes processes in the order they arrive. It's the simplest scheduling algorithm.",
+    preemptive: "No",
     advantages: ["Easy to implement", "No starvation"],
     disadvantages: ["Convoy effect", "High average waiting time"],
     useCase: "Batch systems where execution time doesn't matter much.",
+    complexity: "O(n)",
     recommendedDataset: "Simple Example",
     recommendationReason: "Clearly demonstrates sequential first-come execution without complex preemptions."
   },
   SJF: {
     description: "Selects the process with the smallest burst time next. Non-preemptive.",
+    preemptive: "No",
     advantages: ["Optimal average waiting time", "Minimal response time"],
     disadvantages: ["Starvation possible for long processes", "Burst time must be known"],
     useCase: "Short-job priority systems.",
+    complexity: "O(n log n)",
     recommendedDataset: "Mixed Arrival Times",
     recommendationReason: "Highlights how shortest jobs jump to the front of the queue."
   },
   SRTF: {
     description: "Preemptive version of SJF. Current process is preempted if a new one arrives with shorter remaining time.",
+    preemptive: "Yes",
     advantages: ["Lowest average waiting time", "Very efficient"],
     disadvantages: ["High context switching", "Starvation risk"],
     useCase: "Highly interactive systems.",
+    complexity: "O(n log n)",
     recommendedDataset: "Mixed Arrival Times",
     recommendationReason: "Demonstrates mid-execution preemption when a shorter job arrives."
   },
   RR: {
     description: "Each process gets a small fixed unit of time (quantum) before being switched.",
+    preemptive: "Yes",
     advantages: ["Fairness", "Good response time", "No starvation"],
     disadvantages: ["Sensitive to quantum size", "High context switching overhead"],
     useCase: "Time-sharing systems.",
+    complexity: "O(n)",
     recommendedDataset: "Round Robin Demo",
     recommendationReason: "Perfectly illustrates time-slicing and process cycling."
   },
   Priority: {
     description: "Executes processes based on assigned priority values. Lower values usually mean higher priority.",
+    preemptive: "No (Can be preemptive)",
     advantages: ["Critical tasks run first", "Flexible"],
     disadvantages: ["Starvation for low priority processes"],
     useCase: "Real-time systems with critical tasks.",
+    complexity: "O(n log n)",
     recommendedDataset: "Priority Heavy",
     recommendationReason: "Makes scheduling decisions obvious based on the priority column."
   }
@@ -69,7 +79,8 @@ const AlgorithmSelector = ({ selectedAlgorithm, onSelect, quantum, onQuantumChan
             <select
               value={selectedAlgorithm}
               onChange={(e) => onSelect(e.target.value)}
-              className="w-full bg-brand-navy border border-white/10 rounded-lg p-3 text-sm focus:outline-none focus:border-brand-blue appearance-none font-bold text-white transition-all cursor-pointer hover:border-brand-blue/50"
+              aria-label="Select scheduling algorithm"
+              className="w-full bg-brand-navy border border-white/10 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue appearance-none font-bold text-white transition-all cursor-pointer hover:border-brand-blue/50"
             >
               {algorithms.map((algo) => (
                 <option key={algo.id} value={algo.id}>
@@ -98,7 +109,8 @@ const AlgorithmSelector = ({ selectedAlgorithm, onSelect, quantum, onQuantumChan
                   min="1"
                   value={quantum}
                   onChange={(e) => onQuantumChange(parseInt(e.target.value) || 1)}
-                  className="w-20 bg-brand-navy border border-white/10 rounded px-2 py-1 text-sm font-mono focus:outline-none focus:border-brand-blue"
+                  aria-label="Time quantum for Round Robin"
+                  className="w-20 bg-brand-navy border border-white/10 rounded px-2 py-1 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 />
                 <span className="text-xs text-brand-gray italic">seconds per slice</span>
               </div>
@@ -125,9 +137,27 @@ const AlgorithmSelector = ({ selectedAlgorithm, onSelect, quantum, onQuantumChan
             <h4 className="font-bold uppercase tracking-widest text-xs">How it works</h4>
           </div>
 
-          <p className="text-sm text-brand-gray mb-6 leading-relaxed">
+          <p className="text-sm text-brand-gray mb-4 leading-relaxed">
             {details.description}
           </p>
+
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-white/5 p-3 rounded-lg border border-white/5">
+              <span className="text-[8px] font-black text-brand-blue uppercase tracking-widest block mb-1">Preemptive</span>
+              <span className="text-xs font-bold text-white">{details.preemptive}</span>
+            </div>
+            <div className="bg-white/5 p-3 rounded-lg border border-white/5">
+              <span className="text-[8px] font-black text-brand-blue uppercase tracking-widest block mb-1">Time Complexity</span>
+              <span className="text-xs font-bold text-white">{details.complexity}</span>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <span className="text-[8px] font-black text-brand-blue uppercase tracking-widest block mb-2">Typical Use Case</span>
+            <p className="text-xs text-brand-gray italic bg-brand-blue/5 p-3 rounded-lg border border-brand-blue/10">
+              {details.useCase}
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="space-y-2">

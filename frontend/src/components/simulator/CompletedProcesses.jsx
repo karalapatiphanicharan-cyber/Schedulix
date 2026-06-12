@@ -50,7 +50,7 @@ const CompletedProcesses = ({ currentTime = 0, schedule = null }) => {
           ) : (
             <div className="h-full flex flex-col items-center justify-center border border-dashed border-white/10 rounded-2xl opacity-30">
                <RotateCcw size={24} className="mb-2 opacity-50" />
-               <p className="text-[10px] font-bold uppercase tracking-widest">Waiting to finish</p>
+               <p className="text-[10px] font-bold uppercase tracking-widest">No completed processes yet.</p>
             </div>
           )}
         </AnimatePresence>
