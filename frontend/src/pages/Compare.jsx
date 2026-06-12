@@ -1,92 +1,90 @@
 import React from 'react';
 import SectionTitle from '../components/SectionTitle';
-import { BarChart3, Info, GitCompare } from 'lucide-react';
+import { GitCompare, BarChart3, Activity, Layers, Download, Play, Trophy } from 'lucide-react';
 
 const Compare = () => {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24">
       <SectionTitle
         title="Algorithm Comparison"
-        subtitle="Analyze and compare performance across different scheduling strategies."
+        subtitle="Benchmark multiple scheduling strategies against the same workload. (Static Preview)"
         centered={false}
       />
 
-      <div className="space-y-8">
-        {/* Selection & Info */}
-        <div className="glass p-8 flex flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
-          <div className="max-w-md">
-            <h3 className="text-xl font-bold mb-2 flex items-center space-x-2">
-              <GitCompare className="text-brand-blue" />
-              <span>Side-by-Side Analysis</span>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left: Configuration Placeholder */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="glass p-6">
+            <h3 className="text-lg font-bold mb-4 flex items-center space-x-2">
+              <GitCompare size={18} className="text-brand-blue" />
+              <span>Setup Comparison</span>
             </h3>
-            <p className="text-brand-gray text-sm">
-              Select multiple algorithms to run against the same process workload.
-              Visualize efficiency gaps and performance trade-offs in real-time.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2 justify-center">
-            {['FCFS', 'SJF', 'SRTF', 'RR', 'Priority'].map(algo => (
-              <label key={algo} className="flex items-center space-x-2 glass px-4 py-2 rounded-full cursor-pointer hover:bg-white/5 transition-colors">
-                <input type="checkbox" className="accent-brand-blue" />
-                <span className="text-sm">{algo}</span>
-              </label>
-            ))}
-          </div>
-        </div>
 
-        {/* Metric Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { title: "Waiting Time", metric: "Lower is better", color: "text-brand-blue" },
-            { title: "Turnaround Time", metric: "Lower is better", color: "text-brand-cyan" },
-            { title: "CPU Utilization", metric: "Higher is better", color: "text-green-400" }
-          ].map((card, i) => (
-            <div key={i} className="glass p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="font-bold">{card.title}</h4>
-                <Info size={14} className="text-brand-gray" />
+            <div className="space-y-6 opacity-50 pointer-events-none">
+              <div>
+                <p className="text-[10px] font-black text-brand-gray uppercase tracking-widest mb-3">Select Algorithms</p>
+                <div className="grid grid-cols-2 gap-2">
+                   {['FCFS', 'SJF', 'SRTF', 'RR'].map(algo => (
+                     <div key={algo} className="p-2 border border-white/10 rounded-lg text-xs font-bold text-brand-gray">
+                        {algo}
+                     </div>
+                   ))}
+                </div>
               </div>
-              <div className="h-32 flex items-center justify-center border border-dashed border-white/10 rounded-lg">
-                <p className="text-brand-gray text-xs">Comparison Chart</p>
-              </div>
-              <p className={`text-[10px] uppercase tracking-widest mt-4 ${card.color} font-bold`}>{card.metric}</p>
+              <button className="w-full py-4 bg-brand-blue/20 text-brand-blue font-black uppercase tracking-widest text-xs rounded-xl">
+                 Execute Comparison
+              </button>
             </div>
-          ))}
+          </div>
+
+          <div className="glass p-6 border-dashed border-white/10">
+             <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Layers className="text-brand-gray/20 mb-3" size={32} />
+                <p className="text-xs text-brand-gray">Comparison presets will be available in Phase 3.</p>
+             </div>
+          </div>
         </div>
 
-        {/* Comparison Table */}
-        <div className="glass overflow-hidden">
-          <div className="p-6 border-b border-white/10 flex items-center space-x-2">
-            <BarChart3 size={18} className="text-brand-blue" />
-            <h3 className="font-bold">Metrics Summary Table</h3>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-white/5 text-xs text-brand-gray uppercase tracking-wider">
-                <tr>
-                  <th className="px-6 py-4">Algorithm</th>
-                  <th className="px-6 py-4">Avg. Waiting</th>
-                  <th className="px-6 py-4">Avg. Turnaround</th>
-                  <th className="px-6 py-4">Throughput</th>
-                  <th className="px-6 py-4">Efficiency</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {[1, 2, 3].map(i => (
-                  <tr key={i} className="hover:bg-white/[0.02]">
-                    <td className="px-6 py-4 text-brand-gray italic">---</td>
-                    <td className="px-6 py-4 text-brand-gray italic">---</td>
-                    <td className="px-6 py-4 text-brand-gray italic">---</td>
-                    <td className="px-6 py-4 text-brand-gray italic">---</td>
-                    <td className="px-6 py-4 text-brand-gray italic">---</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="p-12 text-center text-brand-gray text-sm">
-            Run a comparison to see detailed results.
-          </div>
+        {/* Right: Results Placeholder */}
+        <div className="lg:col-span-8 space-y-8">
+           {/* Static Recommendation Placeholder */}
+           <div className="glass border-l-4 border-brand-blue/30 p-6 bg-brand-blue/5">
+              <div className="flex items-start space-x-4">
+                 <div className="p-3 bg-brand-blue/20 rounded-2xl text-brand-blue">
+                    <Trophy size={24} />
+                 </div>
+                 <div>
+                    <h4 className="text-lg font-bold text-white mb-1">Performance Leaderboard</h4>
+                    <p className="text-xs text-brand-gray leading-relaxed">
+                       Once algorithms are executed, this section will highlight the most efficient strategy for your specific workload based on waiting time and throughput.
+                    </p>
+                 </div>
+              </div>
+           </div>
+
+           {/* Metrics Table Placeholder */}
+           <div className="glass overflow-hidden">
+              <div className="p-6 border-b border-white/10 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <BarChart3 size={18} className="text-brand-blue" />
+                  <h3 className="font-bold">Comparative Metrics</h3>
+                </div>
+              </div>
+              <div className="p-12 text-center bg-white/[0.02]">
+                 <Activity size={40} className="mx-auto mb-4 text-brand-gray/10" />
+                 <p className="text-sm text-brand-gray">Execute a comparison to see data analytics.</p>
+              </div>
+           </div>
+
+           {/* Chart Placeholders */}
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="glass p-6 h-48 flex items-center justify-center border-dashed border-white/10">
+                 <span className="text-[10px] font-black text-brand-gray uppercase tracking-widest opacity-30">Avg. Waiting Time Chart</span>
+              </div>
+              <div className="glass p-6 h-48 flex items-center justify-center border-dashed border-white/10">
+                 <span className="text-[10px] font-black text-brand-gray uppercase tracking-widest opacity-30">CPU Utilization Chart</span>
+              </div>
+           </div>
         </div>
       </div>
     </div>

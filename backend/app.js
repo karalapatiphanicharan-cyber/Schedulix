@@ -7,9 +7,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const simulationRoutes = require('./routes/simulationRoutes');
-app.use('/api', simulationRoutes);
-
 app.get('/', (req, res) => {
   res.json({
     status: "running",
