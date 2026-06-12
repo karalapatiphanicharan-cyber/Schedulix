@@ -46,7 +46,7 @@ const StatCard = ({ label, value, unit, icon: Icon, description, isPlaceholder }
   </div>
 );
 
-const StatisticsPanel = ({ results, metrics, playbackState }) => {
+const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle' }) => {
   const isSimulationStarted = playbackState !== 'idle';
   const isFinished = playbackState === 'finished';
 
@@ -58,11 +58,11 @@ const StatisticsPanel = ({ results, metrics, playbackState }) => {
   ]);
 
   useEffect(() => {
-    if (isSimulationStarted && results && metrics) {
-      const avgWaiting = results.reduce((acc, r) => acc + r.waitingTime, 0) / results.length;
-      const avgTurnaround = results.reduce((acc, r) => acc + r.turnaroundTime, 0) / results.length;
+    if (isSimulationStarted && Array.isArray(results) && results.length > 0 && metrics && metrics.totalTime > 0) {
+      const avgWaiting = results.reduce((acc, r) => acc + (r.waitingTime || 0), 0) / results.length;
+      const avgTurnaround = results.reduce((acc, r) => acc + (r.turnaroundTime || 0), 0) / results.length;
       const throughput = results.length / metrics.totalTime;
-      const utilization = ((metrics.totalTime - metrics.idleTime) / metrics.totalTime) * 100;
+      const utilization = Math.max(0, Math.min(100, ((metrics.totalTime - (metrics.idleTime || 0)) / metrics.totalTime) * 100));
 
       setStats(prev => [
         { ...prev[0], value: avgWaiting },
@@ -117,11 +117,11 @@ const StatisticsPanel = ({ results, metrics, playbackState }) => {
             <div className="flex items-center space-x-6">
                 <div className="flex flex-col">
                     <span className="text-[9px] text-brand-gray/40 font-black uppercase tracking-widest mb-1">Context Switches</span>
-                    <span className="text-xl font-mono font-bold text-white">{metrics.contextSwitches}</span>
+                    <span className="text-xl font-mono font-bold text-white">{metrics.contextSwitches ?? 0}</span>
                 </div>
                 <div className="flex flex-col">
                     <span className="text-[9px] text-brand-gray/40 font-black uppercase tracking-widest mb-1">Total Simulation Time</span>
-                    <span className="text-xl font-mono font-bold text-brand-cyan">{metrics.totalTime.toFixed(1)}s</span>
+                    <span className="text-xl font-mono font-bold text-brand-cyan">{(metrics.totalTime || 0).toFixed(1)}s</span>
                 </div>
             </div>
 

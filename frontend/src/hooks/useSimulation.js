@@ -36,8 +36,9 @@ export const useSimulation = () => {
       const deltaTime = (time - previousTimeRef.current) / 1000;
       const nextTime = currentTime + deltaTime * speedRef.current;
 
-      if (schedule && nextTime >= schedule.metrics.totalTime) {
-        setCurrentTime(schedule.metrics.totalTime);
+      const totalTime = schedule?.metrics?.totalTime ?? 0;
+      if (nextTime >= totalTime) {
+        setCurrentTime(totalTime);
         setPlaybackState('finished');
         return;
       }

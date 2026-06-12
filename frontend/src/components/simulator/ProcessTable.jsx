@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Edit2, Trash2, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const ProcessTable = ({ processes, onUpdate, onDelete, currentTime, schedule, playbackState }) => {
+const ProcessTable = ({ processes = [], onUpdate = () => {}, onDelete = () => {}, currentTime = 0, schedule = null, playbackState = 'idle' }) => {
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [error, setError] = useState('');
@@ -51,13 +51,16 @@ const ProcessTable = ({ processes, onUpdate, onDelete, currentTime, schedule, pl
   const getProcessState = (processId) => {
     if (isIdle) return 'neutral';
 
-    const result = schedule?.results.find(r => r.id === processId);
-    if (result && result.endTime <= currentTime) return 'completed';
+    const results = schedule?.results || [];
+    const result = results.find(r => r && r.id === processId);
+    if (result && (result.endTime ?? Infinity) <= currentTime) return 'completed';
 
-    const currentSegment = schedule?.segments.find(s => s.startTime <= currentTime && s.endTime > currentTime);
+    const segments = schedule?.segments || [];
+    const currentSegment = segments.find(s => s && s.startTime <= currentTime && s.endTime > currentTime);
     if (currentSegment && currentSegment.processId === processId) return 'running';
 
-    if (processes.find(p => p.id === processId)?.arrivalTime <= currentTime) return 'waiting';
+    const safeProcesses = Array.isArray(processes) ? processes.filter(Boolean) : [];
+    if (safeProcesses.find(p => p && p.id === processId)?.arrivalTime <= currentTime) return 'waiting';
 
     return 'neutral';
   };
@@ -71,7 +74,8 @@ const ProcessTable = ({ processes, onUpdate, onDelete, currentTime, schedule, pl
     }
   };
 
-  if (processes.length === 0) return null;
+  const safeProcesses = Array.isArray(processes) ? processes.filter(Boolean) : [];
+  if (safeProcesses.length === 0) return null;
 
   return (
     <div className="glass overflow-hidden">
@@ -89,7 +93,8 @@ const ProcessTable = ({ processes, onUpdate, onDelete, currentTime, schedule, pl
           </thead>
           <tbody className="divide-y divide-white/5">
             <AnimatePresence initial={false}>
-              {processes.map((process) => {
+              {safeProcesses.map((process) => {
+                if (!process?.id) return null;
                 const state = getProcessState(process.id);
                 const stateClass = getStateStyles(state);
 
@@ -106,7 +111,7 @@ const ProcessTable = ({ processes, onUpdate, onDelete, currentTime, schedule, pl
                       <div className="flex items-center space-x-3">
                         <div
                           className="w-3 h-3 rounded-full shadow-lg relative"
-                          style={{ backgroundColor: process.color, boxShadow: `0 0 12px ${process.color}50` }}
+                          style={{ backgroundColor: process.color || '#3b82f6', boxShadow: `0 0 12px ${(process.color || '#3b82f6')}50` }}
                         >
                            {state === 'running' && (
                              <div className="absolute inset-0 rounded-full bg-white animate-ping opacity-40" />
@@ -123,19 +128,19 @@ const ProcessTable = ({ processes, onUpdate, onDelete, currentTime, schedule, pl
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-black text-sm tracking-tight">{process.id}</td>
+                    <td className="px-6 py-4 font-black text-sm tracking-tight">{process.id || 'N/A'}</td>
                     <td className="px-6 py-4">
                       {editingId === process.id ? (
                         <input
                           type="number"
                           name="arrivalTime"
                           min="0"
-                          value={editFormData.arrivalTime}
+                          value={editFormData.arrivalTime ?? 0}
                           onChange={handleEditChange}
                           className="w-20 bg-brand-navy border border-white/10 rounded px-2 py-1 text-xs focus:outline-none focus:border-brand-blue"
                         />
                       ) : (
-                        <span className="font-mono text-xs opacity-80">{process.arrivalTime}s</span>
+                        <span className="font-mono text-xs opacity-80">{(process.arrivalTime ?? 0)}s</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
@@ -144,12 +149,12 @@ const ProcessTable = ({ processes, onUpdate, onDelete, currentTime, schedule, pl
                           type="number"
                           name="burstTime"
                           min="1"
-                          value={editFormData.burstTime}
+                          value={editFormData.burstTime ?? 1}
                           onChange={handleEditChange}
                           className="w-20 bg-brand-navy border border-white/10 rounded px-2 py-1 text-xs focus:outline-none focus:border-brand-blue"
                         />
                       ) : (
-                        <span className="font-mono text-xs opacity-80">{process.burstTime}s</span>
+                        <span className="font-mono text-xs opacity-80">{(process.burstTime ?? 0)}s</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
@@ -158,12 +163,12 @@ const ProcessTable = ({ processes, onUpdate, onDelete, currentTime, schedule, pl
                           type="number"
                           name="priority"
                           min="0"
-                          value={editFormData.priority}
+                          value={editFormData.priority ?? 0}
                           onChange={handleEditChange}
                           className="w-20 bg-brand-navy border border-white/10 rounded px-2 py-1 text-xs focus:outline-none focus:border-brand-blue"
                         />
                       ) : (
-                        <span className="font-mono text-xs opacity-80">{process.priority}</span>
+                        <span className="font-mono text-xs opacity-80">{process.priority ?? 'N/A'}</span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-right">

@@ -1,9 +1,10 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const GanttChart = ({ segments, currentTime, totalTime, processes }) => {
+const GanttChart = ({ segments = [], currentTime = 0, totalTime = 0, processes = [] }) => {
   const containerRef = useRef(null);
   const [hoveredSegment, setHoveredSegment] = useState(null);
+  const safeProcesses = Array.isArray(processes) ? processes.filter(Boolean) : [];
 
   // Auto-scroll as simulation progresses
   useEffect(() => {
@@ -17,7 +18,7 @@ const GanttChart = ({ segments, currentTime, totalTime, processes }) => {
     }
   }, [currentTime]);
 
-  if (!segments || segments.length === 0) {
+  if (!Array.isArray(segments) || segments.length === 0) {
     return (
       <div className="glass p-6 min-h-[220px]">
         <h3 className="text-lg font-bold mb-6">Gantt Chart</h3>
@@ -64,14 +65,14 @@ const GanttChart = ({ segments, currentTime, totalTime, processes }) => {
 
           {/* Segments Container */}
           <div className="flex items-end h-20">
-            {segments.map((segment, index) => {
-              const isVisible = segment.startTime <= currentTime;
+            {segments.filter(Boolean).map((segment, index) => {
+              const isVisible = (segment.startTime ?? Infinity) <= currentTime;
               if (!isVisible) return null;
 
-              const duration = Math.min(segment.endTime, currentTime) - segment.startTime;
-              const width = duration * 60;
-              const fullWidth = (segment.endTime - segment.startTime) * 60;
-              const originalProcess = processes.find(p => p.id === segment.processId);
+              const duration = Math.min(segment.endTime || 0, currentTime) - (segment.startTime || 0);
+              const width = Math.max(0, duration * 60);
+              const fullWidth = Math.max(0, ((segment.endTime || 0) - (segment.startTime || 0)) * 60);
+              const originalProcess = safeProcesses.find(p => p && p.id === segment.processId);
 
               return (
                 <div
@@ -100,7 +101,7 @@ const GanttChart = ({ segments, currentTime, totalTime, processes }) => {
                     }}
                   >
                     <span className={`text-xs font-bold ${segment.isIdle ? 'text-brand-gray/50' : 'text-white'}`}>
-                      {segment.processId}
+                      {segment.processId || (segment.isIdle ? '' : 'N/A')}
                     </span>
 
                     {/* Subtle Shine Effect */}
