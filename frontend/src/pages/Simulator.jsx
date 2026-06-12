@@ -95,6 +95,7 @@ const Simulator = () => {
               onSelect={handleAlgorithmChange}
               quantum={quantum}
               onQuantumChange={setQuantum}
+              onLoadRecommended={loadSampleDataset}
             />
           </div>
 

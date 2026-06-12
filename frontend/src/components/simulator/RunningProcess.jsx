@@ -1,50 +1,92 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Activity, Clock, Zap } from 'lucide-react';
 
 const RunningProcess = ({ currentTime, schedule, processes }) => {
   const currentSegment = schedule?.segments.find(
     s => s.startTime <= currentTime && s.endTime > currentTime
   );
 
-  const processData = currentSegment?.isIdle
-    ? null
-    : processes.find(p => p.id === currentSegment?.processId);
+  const isIdle = !currentSegment || currentSegment.isIdle;
+  const processData = isIdle ? null : processes.find(p => p.id === currentSegment?.processId);
 
-  // For remaining time, we need to know how much total burst time this process has left across all segments
-  // This is simpler: totalBurst - executedBurst
   let remainingBurst = 0;
+  let elapsedExecution = 0;
+  let progress = 0;
+
   if (processData) {
-    const executedBurst = schedule.segments
+    elapsedExecution = schedule.segments
       .filter(s => s.processId === processData.id && s.startTime < currentTime)
       .reduce((acc, s) => acc + (Math.min(s.endTime, currentTime) - s.startTime), 0);
-    remainingBurst = Math.max(0, processData.burstTime - executedBurst);
+
+    remainingBurst = Math.max(0, processData.burstTime - elapsedExecution);
+    progress = (elapsedExecution / processData.burstTime) * 100;
   }
 
   return (
-    <div className="glass p-6 min-h-[180px] flex flex-col">
-      <h3 className="text-sm font-bold mb-4 text-brand-gray uppercase tracking-wider">Running Process</h3>
+    <div className="glass p-6 min-h-[180px] flex flex-col relative overflow-hidden">
+      <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none">
+        <Activity size={64} className={!isIdle ? 'animate-pulse text-brand-blue' : ''} />
+      </div>
+
+      <h3 className="text-sm font-bold mb-4 text-brand-gray uppercase tracking-widest flex items-center">
+        <Activity size={14} className={`mr-2 ${!isIdle ? 'text-brand-blue animate-pulse' : 'text-brand-gray/30'}`} />
+        CPU Status
+      </h3>
 
       <div className="flex-grow flex items-center justify-center">
         <AnimatePresence mode="wait">
-          {processData ? (
+          {!isIdle && processData ? (
             <motion.div
               key={processData.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="w-full text-center"
+              initial={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
+              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }}
+              className="w-full"
             >
-              <div className="text-3xl font-bold mb-1" style={{ color: processData.color }}>
-                {processData.id}
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-[10px] text-brand-gray mt-4">
-                <div className="text-left border-r border-white/10 pr-2">
-                  <p className="uppercase opacity-50">Remaining</p>
-                  <p className="text-white font-mono text-sm">{remainingBurst.toFixed(1)}s</p>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-brand-gray uppercase tracking-tighter opacity-50 leading-none">Running</span>
+                  <span className="text-4xl font-black" style={{ color: processData.color }}>
+                    {processData.id}
+                  </span>
                 </div>
-                <div className="text-left pl-2">
-                  <p className="uppercase opacity-50">Arrival</p>
-                  <p className="text-white font-mono text-sm">{processData.arrivalTime}s</p>
+                <div className="text-right">
+                  <div className="text-2xl font-mono font-bold text-white leading-none">
+                    {progress.toFixed(0)}%
+                  </div>
+                  <span className="text-[10px] text-brand-gray uppercase font-bold opacity-50">Progress</span>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden mb-6 border border-white/5 p-[1px]">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  className="h-full rounded-full shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                  style={{ backgroundColor: processData.color }}
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="flex flex-col">
+                  <div className="flex items-center text-[8px] text-brand-gray font-black uppercase mb-0.5">
+                    <Clock size={8} className="mr-1" /> Remaining
+                  </div>
+                  <span className="text-xs font-mono font-bold text-white">{remainingBurst.toFixed(1)}s</span>
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center text-[8px] text-brand-gray font-black uppercase mb-0.5">
+                    <Zap size={8} className="mr-1" /> Priority
+                  </div>
+                  <span className="text-xs font-mono font-bold text-white">{processData.priority}</span>
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center text-[8px] text-brand-gray font-black uppercase mb-0.5">
+                    <Activity size={8} className="mr-1" /> Elapsed
+                  </div>
+                  <span className="text-xs font-mono font-bold text-white">{elapsedExecution.toFixed(1)}s</span>
                 </div>
               </div>
             </motion.div>
@@ -56,10 +98,11 @@ const RunningProcess = ({ currentTime, schedule, processes }) => {
               exit={{ opacity: 0 }}
               className="text-center"
             >
-              <div className="h-12 w-12 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center mx-auto mb-2">
-                <div className="w-2 h-2 rounded-full bg-white/20 animate-pulse" />
+              <div className="h-16 w-16 rounded-3xl border-2 border-dashed border-white/10 flex items-center justify-center mx-auto mb-3 relative overflow-hidden">
+                 <div className="absolute inset-0 bg-white/[0.02] animate-pulse" />
+                 <div className="w-2 h-2 rounded-full bg-brand-gray/30 animate-ping" />
               </div>
-              <p className="text-brand-gray text-xs">CPU Idle</p>
+              <p className="text-brand-gray/40 text-[10px] font-black uppercase tracking-widest">CPU IDLE</p>
             </motion.div>
           )}
         </AnimatePresence>
