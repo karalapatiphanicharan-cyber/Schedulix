@@ -68,8 +68,8 @@ const ProcessForm = ({ onAdd, nextId, existingIds }) => {
   };
 
   return (
-    <div className="glass p-6">
-      <div className="flex items-center justify-between mb-4">
+    <div className="glass p-5 md:p-6">
+      <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold">Add Process</h3>
         <button
           onClick={handleReset}
@@ -80,49 +80,49 @@ const ProcessForm = ({ onAdd, nextId, existingIds }) => {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="text-xs text-brand-gray">Process ID</label>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-5">
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-brand-gray uppercase tracking-wider">Process ID</label>
             <input
               type="text"
               name="id"
               value={formData.id}
               onChange={handleChange}
-              className="w-full bg-brand-navy border border-white/10 rounded-lg p-2 text-sm focus:outline-none focus:border-brand-blue"
+              className="w-full h-10 bg-brand-navy border border-white/10 rounded-lg px-3 text-sm focus:outline-none focus:border-brand-blue transition-colors"
             />
           </div>
-          <div className="space-y-1">
-            <label className="text-xs text-brand-gray">Arrival Time</label>
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-brand-gray uppercase tracking-wider">Arrival Time</label>
             <input
               type="number"
               name="arrivalTime"
               min="0"
               value={formData.arrivalTime}
               onChange={handleChange}
-              className="w-full bg-brand-navy border border-white/10 rounded-lg p-2 text-sm focus:outline-none focus:border-brand-blue"
+              className="w-full h-10 bg-brand-navy border border-white/10 rounded-lg px-3 text-sm focus:outline-none focus:border-brand-blue transition-colors"
             />
           </div>
-          <div className="space-y-1">
-            <label className="text-xs text-brand-gray">Burst Time</label>
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-brand-gray uppercase tracking-wider">Burst Time</label>
             <input
               type="number"
               name="burstTime"
               min="1"
               value={formData.burstTime}
               onChange={handleChange}
-              className="w-full bg-brand-navy border border-white/10 rounded-lg p-2 text-sm focus:outline-none focus:border-brand-blue"
+              className="w-full h-10 bg-brand-navy border border-white/10 rounded-lg px-3 text-sm focus:outline-none focus:border-brand-blue transition-colors"
             />
           </div>
-          <div className="space-y-1">
-            <label className="text-xs text-brand-gray">Priority</label>
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-brand-gray uppercase tracking-wider">Priority</label>
             <input
               type="number"
               name="priority"
               min="0"
               value={formData.priority}
               onChange={handleChange}
-              className="w-full bg-brand-navy border border-white/10 rounded-lg p-2 text-sm focus:outline-none focus:border-brand-blue"
+              className="w-full h-10 bg-brand-navy border border-white/10 rounded-lg px-3 text-sm focus:outline-none focus:border-brand-blue transition-colors"
             />
           </div>
         </div>
@@ -133,9 +133,9 @@ const ProcessForm = ({ onAdd, nextId, existingIds }) => {
 
         <button
           type="submit"
-          className="w-full flex items-center justify-center space-x-2 bg-brand-blue hover:bg-blue-600 text-white py-2 rounded-lg text-sm font-medium transition-all"
+          className="w-full h-11 flex items-center justify-center space-x-2 bg-brand-blue hover:bg-blue-600 text-white rounded-lg text-sm font-bold transition-all shadow-lg shadow-brand-blue/20 active:scale-[0.98]"
         >
-          <Plus size={16} />
+          <Plus size={18} />
           <span>Add Process</span>
         </button>
       </form>

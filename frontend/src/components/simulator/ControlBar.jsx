@@ -20,13 +20,13 @@ const ControlBar = ({
             <button
               disabled
               title="Available in Phase 3"
-              className="p-3 bg-brand-blue/50 cursor-not-allowed rounded-full text-white/50 transition-all"
+              className="p-3 bg-brand-blue/30 grayscale opacity-40 cursor-not-allowed rounded-full text-white/50 transition-all"
             >
               <Play size={20} fill="currentColor" />
             </button>
             <button
               disabled
-              className="p-3 glass cursor-not-allowed rounded-full text-white/30 transition-all"
+              className="p-3 glass grayscale opacity-40 cursor-not-allowed rounded-full text-white/30 transition-all"
             >
               <Pause size={20} />
             </button>
