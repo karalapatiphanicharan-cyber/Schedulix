@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 export const useSimulation = () => {
   const [playbackState, setPlaybackState] = useState('idle'); // idle, running, paused, finished
   const [currentTime, setCurrentTime] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [schedule, setSchedule] = useState(null);
   const [results, setResults] = useState(null);
   const [metrics, setMetrics] = useState(null);
@@ -10,7 +11,6 @@ export const useSimulation = () => {
 
   const requestRef = useRef();
   const previousTimeRef = useRef();
-  const speedRef = useRef(1); // steps per second
 
   const stopSimulation = useCallback(() => {
     setPlaybackState('idle');
@@ -34,7 +34,7 @@ export const useSimulation = () => {
 
     if (previousTimeRef.current !== undefined) {
       const deltaTime = (time - previousTimeRef.current) / 1000;
-      const nextTime = currentTime + deltaTime * speedRef.current;
+      const nextTime = currentTime + deltaTime * playbackSpeed;
 
       const totalTime = schedule?.metrics?.totalTime ?? 0;
       if (nextTime >= totalTime) {
@@ -48,7 +48,7 @@ export const useSimulation = () => {
 
     previousTimeRef.current = time;
     requestRef.current = requestAnimationFrame(animate);
-  }, [playbackState, currentTime, schedule]);
+  }, [playbackState, currentTime, schedule, playbackSpeed]);
 
   useEffect(() => {
     if (playbackState === 'running') {
@@ -98,9 +98,20 @@ export const useSimulation = () => {
     }
   };
 
+  const seekTo = (time) => {
+    const totalTime = schedule?.metrics?.totalTime ?? 0;
+    const targetTime = Math.max(0, Math.min(time, totalTime));
+    setCurrentTime(targetTime);
+
+    if (playbackState === 'finished' && targetTime < totalTime) {
+      setPlaybackState('paused');
+    }
+  };
+
   return {
     playbackState,
     currentTime,
+    playbackSpeed,
     schedule,
     results,
     metrics,
@@ -109,6 +120,7 @@ export const useSimulation = () => {
     pauseSimulation,
     resumeSimulation,
     resetSimulation,
-    setSpeed: (speed) => { speedRef.current = speed; }
+    setPlaybackSpeed,
+    seekTo
   };
 };

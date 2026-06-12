@@ -85,9 +85,18 @@ const ProcessTable = ({ processes = [], onUpdate = () => {}, onDelete = () => {}
             <tr className="text-brand-gray text-[10px] uppercase font-black tracking-widest border-b border-white/10">
               <th className="px-6 py-5">Status</th>
               <th className="px-6 py-5">ID</th>
-              <th className="px-6 py-5">Arrival</th>
-              <th className="px-6 py-5">Burst</th>
-              <th className="px-6 py-5">Priority</th>
+              <th className="px-6 py-5 text-center">Arrival</th>
+              <th className="px-6 py-5 text-center">Burst</th>
+              <th className="px-6 py-5 text-center">Rem.</th>
+              <th className="px-6 py-5 text-center">Priority</th>
+              {!isIdle && (
+                <>
+                  <th className="px-6 py-5 text-center text-brand-blue/60">Start</th>
+                  <th className="px-6 py-5 text-center text-brand-blue/60">End</th>
+                  <th className="px-6 py-5 text-center text-brand-cyan/60">Wait</th>
+                  <th className="px-6 py-5 text-center text-brand-cyan/60">TAT</th>
+                </>
+              )}
               <th className="px-6 py-5 text-right">Actions</th>
             </tr>
           </thead>
@@ -98,6 +107,34 @@ const ProcessTable = ({ processes = [], onUpdate = () => {}, onDelete = () => {}
                 const state = getProcessState(process.id);
                 const stateClass = getStateStyles(state);
 
+                const result = schedule?.results?.find(r => r.id === process.id);
+                const segments = schedule?.segments?.filter(s => s.processId === process.id) || [];
+
+                const executedBurst = segments
+                  .filter(s => s.startTime < currentTime)
+                  .reduce((acc, s) => acc + (Math.min(s.endTime, currentTime) - s.startTime), 0);
+                const remainingTime = Math.max(0, (process.burstTime || 0) - executedBurst);
+
+                const hasStarted = segments.some(s => s.startTime <= currentTime);
+                const startTime = hasStarted ? segments[0].startTime : null;
+                const endTime = state === 'completed' ? result?.endTime : null;
+
+                // Live metrics
+                let liveWait = 0;
+                let liveTAT = 0;
+
+                if (!isIdle) {
+                  if (currentTime >= process.arrivalTime) {
+                    if (state === 'completed' && result) {
+                      liveWait = result.waitingTime;
+                      liveTAT = result.turnaroundTime;
+                    } else {
+                      liveTAT = currentTime - process.arrivalTime;
+                      liveWait = liveTAT - executedBurst;
+                    }
+                  }
+                }
+
                 return (
                   <motion.tr
                     key={process.id}
@@ -105,7 +142,7 @@ const ProcessTable = ({ processes = [], onUpdate = () => {}, onDelete = () => {}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className={`transition-all duration-300 group ${stateClass} ${state === 'neutral' ? 'hover:bg-white/[0.03]' : ''}`}
+                    className={`transition-all duration-300 group ${stateClass} ${state === 'neutral' ? 'hover:bg-white/[0.03]' : ''} ${state === 'running' ? 'ring-1 ring-inset ring-brand-blue/30' : ''}`}
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-3">
@@ -129,7 +166,7 @@ const ProcessTable = ({ processes = [], onUpdate = () => {}, onDelete = () => {}
                       </div>
                     </td>
                     <td className="px-6 py-4 font-black text-sm tracking-tight">{process.id || 'N/A'}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-center">
                       {editingId === process.id ? (
                         <input
                           type="number"
@@ -143,7 +180,7 @@ const ProcessTable = ({ processes = [], onUpdate = () => {}, onDelete = () => {}
                         <span className="font-mono text-xs opacity-80">{(process.arrivalTime ?? 0)}s</span>
                       )}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-center">
                       {editingId === process.id ? (
                         <input
                           type="number"
@@ -157,7 +194,12 @@ const ProcessTable = ({ processes = [], onUpdate = () => {}, onDelete = () => {}
                         <span className="font-mono text-xs opacity-80">{(process.burstTime ?? 0)}s</span>
                       )}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-center">
+                      <span className={`font-mono text-xs font-bold ${remainingTime > 0 ? 'text-white' : 'text-green-400'}`}>
+                        {remainingTime.toFixed(1)}s
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
                       {editingId === process.id ? (
                         <input
                           type="number"
@@ -171,6 +213,22 @@ const ProcessTable = ({ processes = [], onUpdate = () => {}, onDelete = () => {}
                         <span className="font-mono text-xs opacity-80">{process.priority ?? 'N/A'}</span>
                       )}
                     </td>
+                    {!isIdle && (
+                      <>
+                        <td className="px-6 py-4 text-center">
+                          <span className="font-mono text-xs opacity-60">{startTime !== null ? `${startTime.toFixed(1)}s` : '—'}</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="font-mono text-xs opacity-60">{endTime !== null ? `${endTime.toFixed(1)}s` : '—'}</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="font-mono text-xs text-brand-cyan/80 font-bold">{liveWait.toFixed(1)}s</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="font-mono text-xs text-brand-blue/80 font-bold">{liveTAT.toFixed(1)}s</span>
+                        </td>
+                      </>
+                    )}
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end space-x-2">
                         {editingId === process.id ? (

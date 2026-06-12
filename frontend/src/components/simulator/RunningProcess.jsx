@@ -106,7 +106,7 @@ const RunningProcess = ({ currentTime = 0, schedule = null, processes = [] }) =>
                  <div className="absolute inset-0 bg-white/[0.02] animate-pulse" />
                  <div className="w-2 h-2 rounded-full bg-brand-gray/30 animate-ping" />
               </div>
-              <p className="text-brand-gray/40 text-[10px] font-black uppercase tracking-widest">CPU IDLE</p>
+              <p className="text-brand-gray/40 text-[10px] font-black uppercase tracking-widest">CPU is idle.</p>
             </motion.div>
           )}
         </AnimatePresence>

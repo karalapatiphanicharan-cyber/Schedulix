@@ -74,7 +74,7 @@ const ReadyQueue = ({ processes = [], currentTime = 0, schedule = null }) => {
               animate={{ opacity: 1 }}
               className="w-full h-16 border border-dashed border-white/10 rounded-xl flex items-center justify-center text-brand-gray/40 text-[10px] uppercase tracking-widest font-bold"
             >
-              Queue Idle
+              No waiting processes.
             </motion.div>
           )}
         </AnimatePresence>

@@ -4,6 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const ControlBar = ({
   playbackState,
+  currentTime,
+  playbackSpeed,
+  setPlaybackSpeed,
+  seekTo,
+  totalTime,
   onRun,
   onPause,
   onResume,
@@ -32,12 +37,13 @@ const ControlBar = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const ControlButton = ({ icon: Icon, label, onClick, disabled, primary, danger, title }) => (
+  const ControlButton = ({ icon: Icon, label, onClick, disabled, primary, danger, title, ariaLabel }) => (
     <button
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`flex flex-col items-center justify-center space-y-1 px-4 py-3 rounded-xl transition-all active:scale-95 min-w-[80px] group ${
+      aria-label={ariaLabel || label}
+      className={`flex flex-col items-center justify-center space-y-1 px-4 py-3 rounded-xl transition-all active:scale-95 min-w-[80px] group focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:outline-none ${
         disabled
           ? 'opacity-30 cursor-not-allowed grayscale'
           : primary
@@ -52,9 +58,31 @@ const ControlBar = ({
     </button>
   );
 
+  const speedOptions = [0.25, 0.5, 1, 2, 4];
+
   return (
     <div className="glass p-6">
       <div className="flex flex-col space-y-8">
+        {/* Playback Progress */}
+        {!isIdle && (
+          <div className="space-y-2">
+            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-brand-gray">
+              <span>Timeline</span>
+              <span className="text-brand-cyan font-mono">{currentTime.toFixed(1)}s / {totalTime.toFixed(1)}s</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max={totalTime}
+              step="0.1"
+              value={currentTime}
+              onChange={(e) => seekTo(parseFloat(e.target.value))}
+              className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-brand-cyan focus:outline-none focus:ring-1 focus:ring-brand-cyan/50"
+              aria-label="Simulation timeline scrubber"
+            />
+          </div>
+        )}
+
         {/* Main Toolbar */}
         <div className="flex flex-wrap items-center justify-center gap-3">
           {isPaused ? (
@@ -89,8 +117,29 @@ const ControlBar = ({
             label="Reset"
             onClick={onReset}
             disabled={isIdle && !isFinished}
-            title="Return to start position"
+            title={isIdle && !isFinished ? "Simulation has not started" : "Return to start position"}
           />
+
+          <div className="w-[1px] h-10 bg-white/10 mx-1 hidden sm:block" />
+
+          {/* Speed Selector */}
+          <div className="flex bg-white/5 rounded-xl p-1 border border-white/10">
+            {speedOptions.map(speed => (
+              <button
+                key={speed}
+                onClick={() => setPlaybackSpeed(speed)}
+                className={`px-2 py-2 rounded-lg text-[10px] font-black transition-all ${
+                  playbackSpeed === speed
+                    ? 'bg-brand-blue text-white shadow-lg'
+                    : 'text-brand-gray hover:text-white'
+                }`}
+                title={`Set speed to ${speed}x`}
+                aria-label={`Set playback speed to ${speed} times`}
+              >
+                {speed}x
+              </button>
+            ))}
+          </div>
 
           <div className="w-[1px] h-10 bg-white/10 mx-1 hidden sm:block" />
 
@@ -100,7 +149,7 @@ const ControlBar = ({
             onClick={onClearAll}
             disabled={!hasProcesses || !isIdle}
             danger
-            title="Remove all processes"
+            title={!hasProcesses ? "No processes to clear" : !isIdle ? "Reset simulation to clear processes" : "Remove all processes"}
           />
         </div>
 
