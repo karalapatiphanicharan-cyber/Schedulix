@@ -17,12 +17,12 @@ const Hero = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="mb-8"
+          className="mb-6"
         >
           <img
             src="/schedulix-logo.png"
             alt="Schedulix Logo"
-            className="mx-auto h-24 md:h-32 object-contain"
+            className="mx-auto h-14 md:h-[72px] lg:h-20 w-auto object-contain"
           />
         </motion.div>
 

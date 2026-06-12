@@ -13,9 +13,9 @@ const EmptyState = ({ onGenerate }) => {
         <Layout className="text-brand-blue" size={40} />
       </div>
 
-      <h3 className="text-xl font-bold mb-2">No Processes Found</h3>
+      <h3 className="text-xl font-bold mb-2">Ready to Start?</h3>
       <p className="text-brand-gray text-sm max-w-xs mx-auto mb-8">
-        Start by adding processes manually or generate a sample dataset to visualize the scheduling.
+        No processes added yet. Populate the list manually using the form or jumpstart with sample data.
       </p>
 
       <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-4">

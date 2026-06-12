@@ -137,14 +137,16 @@ const Simulator = () => {
             <h3 className="text-lg font-bold mb-6">Simulation Statistics</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { label: "Avg. Waiting", value: "0.00ms" },
-                { label: "Avg. Turnaround", value: "0.00ms" },
-                { label: "Throughput", value: "0.0/s" },
-                { label: "Utilization", value: "0%" }
+                { label: "Avg. Waiting", value: "—" },
+                { label: "Avg. Turnaround", value: "—" },
+                { label: "Throughput", value: "—" },
+                { label: "Utilization", value: "Run simulation" }
               ].map((stat, i) => (
                 <div key={i} className="bg-white/5 p-4 rounded-xl border border-white/5">
                   <p className="text-brand-gray text-xs mb-1">{stat.label}</p>
-                  <p className="text-xl font-bold text-brand-cyan">{stat.value}</p>
+                  <p className={`font-bold text-brand-cyan ${stat.value === 'Run simulation' ? 'text-sm' : 'text-xl'}`}>
+                    {stat.value}
+                  </p>
                 </div>
               ))}
             </div>
