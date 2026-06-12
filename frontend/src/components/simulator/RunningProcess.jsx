@@ -2,25 +2,29 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, Clock, Zap } from 'lucide-react';
 
-const RunningProcess = ({ currentTime, schedule, processes }) => {
-  const currentSegment = schedule?.segments.find(
-    s => s.startTime <= currentTime && s.endTime > currentTime
+const RunningProcess = ({ currentTime = 0, schedule = null, processes = [] }) => {
+  const safeProcesses = Array.isArray(processes) ? processes.filter(Boolean) : [];
+
+  const currentSegment = schedule?.segments?.find(
+    s => s && s.startTime <= currentTime && s.endTime > currentTime
   );
 
   const isIdle = !currentSegment || currentSegment.isIdle;
-  const processData = isIdle ? null : processes.find(p => p.id === currentSegment?.processId);
+  const processData = isIdle ? null : safeProcesses.find(p => p && p.id === currentSegment?.processId);
 
   let remainingBurst = 0;
   let elapsedExecution = 0;
   let progress = 0;
 
   if (processData) {
-    elapsedExecution = schedule.segments
-      .filter(s => s.processId === processData.id && s.startTime < currentTime)
+    const segments = schedule?.segments || [];
+    elapsedExecution = segments
+      .filter(s => s && s.processId === processData.id && s.startTime < currentTime)
       .reduce((acc, s) => acc + (Math.min(s.endTime, currentTime) - s.startTime), 0);
 
-    remainingBurst = Math.max(0, processData.burstTime - elapsedExecution);
-    progress = (elapsedExecution / processData.burstTime) * 100;
+    const totalBurst = processData.burstTime || 1; // Avoid division by zero
+    remainingBurst = Math.max(0, (processData.burstTime || 0) - elapsedExecution);
+    progress = Math.min(100, (elapsedExecution / totalBurst) * 100);
   }
 
   return (
@@ -47,8 +51,8 @@ const RunningProcess = ({ currentTime, schedule, processes }) => {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex flex-col">
                   <span className="text-xs font-bold text-brand-gray uppercase tracking-tighter opacity-50 leading-none">Running</span>
-                  <span className="text-4xl font-black" style={{ color: processData.color }}>
-                    {processData.id}
+                  <span className="text-4xl font-black" style={{ color: processData.color || '#3b82f6' }}>
+                    {processData.id || 'N/A'}
                   </span>
                 </div>
                 <div className="text-right">
@@ -65,7 +69,7 @@ const RunningProcess = ({ currentTime, schedule, processes }) => {
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}
                   className="h-full rounded-full shadow-[0_0_10px_rgba(255,255,255,0.2)]"
-                  style={{ backgroundColor: processData.color }}
+                    style={{ backgroundColor: processData.color || '#3b82f6' }}
                 />
               </div>
 
@@ -80,7 +84,7 @@ const RunningProcess = ({ currentTime, schedule, processes }) => {
                   <div className="flex items-center text-[8px] text-brand-gray font-black uppercase mb-0.5">
                     <Zap size={8} className="mr-1" /> Priority
                   </div>
-                  <span className="text-xs font-mono font-bold text-white">{processData.priority}</span>
+                  <span className="text-xs font-mono font-bold text-white">{processData.priority ?? 'N/A'}</span>
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-center text-[8px] text-brand-gray font-black uppercase mb-0.5">

@@ -54,8 +54,19 @@ export const useProcessManager = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(processes));
   }, [processes]);
 
+  const validateProcess = (p) => {
+    if (!p.id || typeof p.id !== 'string') return false;
+    if (typeof p.arrivalTime !== 'number' || p.arrivalTime < 0) return false;
+    if (typeof p.burstTime !== 'number' || p.burstTime <= 0) return false;
+    if (typeof p.priority !== 'number' || p.priority < 0) return false;
+    return true;
+  };
+
   const addProcess = (process) => {
-    if (processes.some((p) => p.id === process.id)) {
+    if (!validateProcess(process)) {
+      return { success: false, error: 'Invalid process data' };
+    }
+    if (processes.some((p) => p && p.id === process.id)) {
       return { success: false, error: 'Duplicate Process ID' };
     }
     setProcesses((prev) => [...prev, { ...process, color: process.color || PREDEFINED_COLORS[prev.length % PREDEFINED_COLORS.length] }]);
@@ -63,8 +74,9 @@ export const useProcessManager = () => {
   };
 
   const updateProcess = (updatedProcess) => {
+    if (!validateProcess(updatedProcess)) return;
     setProcesses((prev) =>
-      prev.map((p) => (p.id === updatedProcess.id ? updatedProcess : p))
+      prev.map((p) => (p && p.id === updatedProcess.id ? updatedProcess : p))
     );
   };
 
@@ -89,8 +101,10 @@ export const useProcessManager = () => {
   };
 
   const loadSampleDataset = (name) => {
-    if (SAMPLE_DATASETS[name]) {
-      setProcesses(SAMPLE_DATASETS[name]);
+    const dataset = SAMPLE_DATASETS[name];
+    if (dataset && Array.isArray(dataset)) {
+      const validDataset = dataset.filter(validateProcess);
+      setProcesses(validDataset);
     }
   };
 

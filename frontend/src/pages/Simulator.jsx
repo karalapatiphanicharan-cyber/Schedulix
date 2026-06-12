@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import SectionTitle from '../components/SectionTitle';
 import { useProcessManager } from '../hooks/useProcessManager';
 import { useSimulation } from '../hooks/useSimulation';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 // Simulator Components
 import ProcessForm from '../components/simulator/ProcessForm';
@@ -71,7 +72,8 @@ const Simulator = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24">
+    <ErrorBoundary>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24">
       <SectionTitle
         title="Interactive Simulator"
         subtitle="Configure your processes and watch the scheduling algorithm in action."
@@ -204,7 +206,8 @@ const Simulator = () => {
         onCancel={() => setProcessToDelete(null)}
         confirmText="Delete"
       />
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 };
 

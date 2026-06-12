@@ -2,9 +2,10 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Clock, RotateCcw } from 'lucide-react';
 
-const CompletedProcesses = ({ currentTime, schedule }) => {
-  const completedResults = schedule?.results
-    .filter(r => r.endTime <= currentTime)
+const CompletedProcesses = ({ currentTime = 0, schedule = null }) => {
+  const results = schedule?.results || [];
+  const completedResults = results
+    .filter(r => r && (r.endTime ?? Infinity) <= currentTime)
     .sort((a, b) => a.endTime - b.endTime) || [];
 
   return (
@@ -26,22 +27,22 @@ const CompletedProcesses = ({ currentTime, schedule }) => {
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
-                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: result.color }} />
-                    <span className="text-xs font-black">{result.id}</span>
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: result.color || '#3b82f6' }} />
+                    <span className="text-xs font-black">{result.id || 'N/A'}</span>
                   </div>
                   <div className="flex items-center space-x-1 px-1.5 py-0.5 bg-green-500/10 rounded-md">
-                    <span className="text-[8px] font-mono font-bold text-green-400">{result.endTime.toFixed(1)}s</span>
+                    <span className="text-[8px] font-mono font-bold text-green-400">{(result.endTime || 0).toFixed(1)}s</span>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-2">
                   <div className="flex-1 bg-white/5 rounded-md px-1.5 py-1 flex flex-col items-center">
                     <span className="text-[7px] uppercase font-bold text-brand-gray/50">Wait</span>
-                    <span className="text-[10px] font-mono font-bold text-brand-cyan">{result.waitingTime.toFixed(1)}</span>
+                    <span className="text-[10px] font-mono font-bold text-brand-cyan">{(result.waitingTime || 0).toFixed(1)}</span>
                   </div>
                   <div className="flex-1 bg-white/5 rounded-md px-1.5 py-1 flex flex-col items-center">
                     <span className="text-[7px] uppercase font-bold text-brand-gray/50">TAT</span>
-                    <span className="text-[10px] font-mono font-bold text-brand-blue">{result.turnaroundTime.toFixed(1)}</span>
+                    <span className="text-[10px] font-mono font-bold text-brand-blue">{(result.turnaroundTime || 0).toFixed(1)}</span>
                   </div>
                 </div>
               </motion.div>

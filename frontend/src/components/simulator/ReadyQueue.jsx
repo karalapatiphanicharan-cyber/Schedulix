@@ -1,13 +1,16 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const ReadyQueue = ({ processes, currentTime, schedule }) => {
-  const currentSegment = schedule?.segments.find(s => s.startTime <= currentTime && s.endTime > currentTime);
+const ReadyQueue = ({ processes = [], currentTime = 0, schedule = null }) => {
+  const safeProcesses = Array.isArray(processes) ? processes.filter(Boolean) : [];
+
+  const currentSegment = schedule?.segments?.find(s => s.startTime <= currentTime && s.endTime > currentTime);
   const runningId = currentSegment?.processId;
 
-  const readyProcesses = processes.filter(p => {
-    const hasArrived = p.arrivalTime <= currentTime;
-    const result = schedule?.results.find(r => r.id === p.id);
+  const readyProcesses = safeProcesses.filter(p => {
+    if (!p || typeof p !== 'object') return false;
+    const hasArrived = (p.arrivalTime ?? Infinity) <= currentTime;
+    const result = schedule?.results?.find(r => r.id === p.id);
     const hasFinished = result && result.endTime <= currentTime;
     const isRunning = runningId === p.id;
     return hasArrived && !hasFinished && !isRunning;
@@ -28,11 +31,14 @@ const ReadyQueue = ({ processes, currentTime, schedule }) => {
         <AnimatePresence mode="popLayout">
           {readyProcesses.length > 0 ? (
             readyProcesses.map((process) => {
+              if (!process?.id) return null;
+
               // Calculate remaining burst for the chip
-              const executedBurst = schedule.segments
-                .filter(s => s.processId === process.id && s.startTime < currentTime)
+              const segments = schedule?.segments || [];
+              const executedBurst = segments
+                .filter(s => s && s.processId === process.id && s.startTime < currentTime)
                 .reduce((acc, s) => acc + (Math.min(s.endTime, currentTime) - s.startTime), 0);
-              const remaining = Math.max(0, process.burstTime - executedBurst);
+              const remaining = Math.max(0, (process.burstTime || 0) - executedBurst);
 
               return (
                 <motion.div
@@ -46,18 +52,18 @@ const ReadyQueue = ({ processes, currentTime, schedule }) => {
                   <div
                     className="px-3 py-2 border rounded-xl flex flex-col items-center justify-center min-w-[50px] shadow-lg transition-all group-hover:-translate-y-1"
                     style={{
-                      backgroundColor: process.color + '15',
-                      borderColor: process.color + '50',
-                      boxShadow: `0 4px 12px ${process.color}20`
+                      backgroundColor: (process.color || '#3b82f6') + '15',
+                      borderColor: (process.color || '#3b82f6') + '50',
+                      boxShadow: `0 4px 12px ${(process.color || '#3b82f6')}20`
                     }}
                   >
-                    <span className="text-xs font-black mb-0.5" style={{ color: process.color }}>{process.id}</span>
+                    <span className="text-xs font-black mb-0.5" style={{ color: process.color || '#3b82f6' }}>{process.id}</span>
                     <span className="text-[8px] font-mono opacity-60 text-white">{remaining.toFixed(1)}s</span>
                   </div>
 
                   {/* Tooltip on hover */}
                   <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 glass px-2 py-1 text-[8px] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-10">
-                    Priority: {process.priority}
+                    Priority: {process.priority ?? 'N/A'}
                   </div>
                 </motion.div>
               );
