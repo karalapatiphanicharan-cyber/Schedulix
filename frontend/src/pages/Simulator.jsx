@@ -103,7 +103,7 @@ const Simulator = () => {
           </div>
 
           {/* Queues and CPU */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="glass p-6 min-h-[180px]">
               <h3 className="text-sm font-bold mb-4 text-brand-gray uppercase tracking-wider">Ready Queue</h3>
               <div className="flex space-x-2">
@@ -114,6 +114,14 @@ const Simulator = () => {
               <h3 className="text-sm font-bold mb-4 text-brand-gray uppercase tracking-wider">Running Process</h3>
               <div className="h-20 flex items-center justify-center border border-dashed border-white/20 rounded">
                 <p className="text-brand-gray text-xs">CPU Idle</p>
+              </div>
+            </div>
+            <div className="glass p-6 min-h-[180px]">
+              <h3 className="text-sm font-bold mb-4 text-brand-gray uppercase tracking-wider">Completed</h3>
+              <div className="space-y-2">
+                <div className="text-center py-4 border border-dashed border-white/20 rounded">
+                  <p className="text-brand-gray text-[10px]">No processes finished</p>
+                </div>
               </div>
             </div>
           </div>

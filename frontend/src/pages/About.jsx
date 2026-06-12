@@ -9,6 +9,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const About = () => {
   const sections = [
@@ -103,12 +104,12 @@ const About = () => {
         <p className="text-brand-gray mb-8 max-w-xl mx-auto">
           Join us in visualizing the core of operating systems. Schedulix is open for exploration and learning.
         </p>
-        <button
-          onClick={() => window.location.href = '/simulator'}
-          className="bg-brand-blue hover:bg-blue-600 text-white px-8 py-3 rounded-full font-bold transition-all"
+        <Link
+          to="/simulator"
+          className="inline-block bg-brand-blue hover:bg-blue-600 text-white px-8 py-3 rounded-full font-bold transition-all"
         >
           Go to Simulator
-        </button>
+        </Link>
       </motion.div>
     </div>
   );

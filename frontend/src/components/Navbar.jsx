@@ -22,8 +22,11 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link to="/" className="flex items-center">
+            <Link to="/" className="flex items-center space-x-3">
               <img src="/schedulix-logo.png" alt="Schedulix Logo" className="h-10 w-auto" />
+              <span className="text-xl font-bold tracking-tight text-white hidden sm:block">
+                Schedulix
+              </span>
             </Link>
           </div>
 
