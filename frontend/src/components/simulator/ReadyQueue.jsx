@@ -2,55 +2,73 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ReadyQueue = ({ processes, currentTime, schedule }) => {
-  // Determine which processes are in the ready queue at currentTime
-  // This is tricky because we don't have the internal state of the queue at every tick from the backend.
-  // For Phase 3, we can derive it: a process is in ready queue if arrivalTime <= currentTime AND it has not finished.
-  // And it is NOT the currently running process.
-
   const currentSegment = schedule?.segments.find(s => s.startTime <= currentTime && s.endTime > currentTime);
   const runningId = currentSegment?.processId;
 
   const readyProcesses = processes.filter(p => {
-    // Has arrived
     const hasArrived = p.arrivalTime <= currentTime;
-    // Has not finished (look in results for endTime)
     const result = schedule?.results.find(r => r.id === p.id);
     const hasFinished = result && result.endTime <= currentTime;
-    // Is not running
     const isRunning = runningId === p.id;
-
     return hasArrived && !hasFinished && !isRunning;
   });
 
   return (
-    <div className="glass p-6 min-h-[180px]">
-      <h3 className="text-sm font-bold mb-4 text-brand-gray uppercase tracking-wider">Ready Queue</h3>
-      <div className="flex flex-wrap gap-2">
-        <AnimatePresence>
+    <div className="glass p-6 min-h-[180px] relative overflow-hidden">
+      <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none">
+        <div className="text-4xl font-black">RQ</div>
+      </div>
+
+      <h3 className="text-sm font-bold mb-6 text-brand-gray uppercase tracking-widest flex items-center">
+        <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan mr-2 animate-pulse" />
+        Ready Queue
+      </h3>
+
+      <div className="flex flex-wrap gap-3">
+        <AnimatePresence mode="popLayout">
           {readyProcesses.length > 0 ? (
-            readyProcesses.map((process) => (
-              <motion.div
-                key={process.id}
-                initial={{ opacity: 0, scale: 0.8, x: -10 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0.8, x: 10 }}
-                className="w-10 h-10 border border-white/10 rounded flex items-center justify-center text-xs font-bold"
-                style={{
-                  backgroundColor: process.color + '20',
-                  borderColor: process.color,
-                  color: process.color
-                }}
-              >
-                {process.id}
-              </motion.div>
-            ))
+            readyProcesses.map((process) => {
+              // Calculate remaining burst for the chip
+              const executedBurst = schedule.segments
+                .filter(s => s.processId === process.id && s.startTime < currentTime)
+                .reduce((acc, s) => acc + (Math.min(s.endTime, currentTime) - s.startTime), 0);
+              const remaining = Math.max(0, process.burstTime - executedBurst);
+
+              return (
+                <motion.div
+                  key={process.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.5, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.5, y: -10 }}
+                  className="relative group"
+                >
+                  <div
+                    className="px-3 py-2 border rounded-xl flex flex-col items-center justify-center min-w-[50px] shadow-lg transition-all group-hover:-translate-y-1"
+                    style={{
+                      backgroundColor: process.color + '15',
+                      borderColor: process.color + '50',
+                      boxShadow: `0 4px 12px ${process.color}20`
+                    }}
+                  >
+                    <span className="text-xs font-black mb-0.5" style={{ color: process.color }}>{process.id}</span>
+                    <span className="text-[8px] font-mono opacity-60 text-white">{remaining.toFixed(1)}s</span>
+                  </div>
+
+                  {/* Tooltip on hover */}
+                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 glass px-2 py-1 text-[8px] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-10">
+                    Priority: {process.priority}
+                  </div>
+                </motion.div>
+              );
+            })
           ) : (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="w-10 h-10 border border-dashed border-white/20 rounded flex items-center justify-center text-brand-gray text-[10px]"
+              className="w-full h-16 border border-dashed border-white/10 rounded-xl flex items-center justify-center text-brand-gray/40 text-[10px] uppercase tracking-widest font-bold"
             >
-              Empty
+              Queue Idle
             </motion.div>
           )}
         </AnimatePresence>

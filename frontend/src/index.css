@@ -25,3 +25,31 @@ body {
 .glass-card {
   @apply glass hover:bg-opacity-10 transition-all duration-300;
 }
+
+/* Custom Scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-white bg-opacity-10 rounded-full hover:bg-opacity-20 transition-colors;
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Animation Utilities */
+.animate-number {
+  font-variant-numeric: tabular-nums;
+}
