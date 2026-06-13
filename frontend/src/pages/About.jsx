@@ -35,9 +35,9 @@ const About = () => {
 
   const roadmap = [
     { phase: "Phase 1", title: "Foundation & UI", status: "Completed", items: ["Responsive Layout", "Glassmorphism UI", "Branding Integration", "Vite + Express Setup"] },
-    { phase: "Phase 2", title: "Core Algorithms", status: "Planned", items: ["FCFS & SJF Implementation", "Preemptive Algorithms (SRTF)", "Round Robin Logic", "Interactive Gantt Charts"] },
-    { phase: "Phase 3", title: "Advanced Analysis", status: "Planned", items: ["Algorithm Comparison Engine", "Exportable Metrics", "Process Import/Export", "Step-by-step Playback"] },
-    { phase: "Phase 4", title: "The Multi-Core Era", status: "Planned", items: ["Multi-core CPU Simulation", "Load Balancing Algorithms", "Power Efficiency Metrics", "Advanced Analytics"] }
+    { phase: "Phase 2", title: "Core Algorithms", status: "Completed", items: ["FCFS & SJF Implementation", "Preemptive Algorithms (SRTF)", "Round Robin Logic", "Interactive Gantt Charts"] },
+    { phase: "Phase 3", title: "Advanced Analysis", status: "Completed", items: ["Exportable Metrics", "Process Import/Export", "Step-by-step Playback"] },
+    { phase: "Phase 4", title: "The Multi-Core Era", status: "Completed", items: ["Multi-core CPU Simulation", "Load Balancing Algorithms", "Power Efficiency Metrics", "Advanced Analytics"] }
   ];
 
   return (
