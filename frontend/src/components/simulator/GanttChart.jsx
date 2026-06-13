@@ -6,7 +6,6 @@ const GanttChart = ({ segments = [], currentTime = 0, totalTime = 0, processes =
   const [hoveredSegment, setHoveredSegment] = useState(null);
   const safeProcesses = Array.isArray(processes) ? processes.filter(Boolean) : [];
 
-  // Auto-scroll as simulation progresses
   useEffect(() => {
     if (containerRef.current && currentTime > 0) {
       const containerWidth = containerRef.current.offsetWidth;
@@ -32,17 +31,15 @@ const GanttChart = ({ segments = [], currentTime = 0, totalTime = 0, processes =
     );
   }
 
-  // Create time markers
   const maxTime = Math.max(totalTime || 0, currentTime, 10);
-  const timeMarkers = [];
-  for (let i = 0; i <= Math.ceil(maxTime); i++) {
-    timeMarkers.push(i);
-  }
 
   const tickMarkers = [];
   for (let i = 0; i <= Math.ceil(maxTime) * 2; i++) {
     tickMarkers.push(i * 0.5);
   }
+
+  const isMultiCore = Array.isArray(segments) && Array.isArray(segments[0]);
+  const lanes = isMultiCore ? segments : [segments];
 
   return (
     <div className="glass p-6 min-h-[240px] overflow-hidden relative">
@@ -60,79 +57,80 @@ const GanttChart = ({ segments = [], currentTime = 0, totalTime = 0, processes =
         ref={containerRef}
         className="w-full overflow-x-auto pb-8 custom-scrollbar relative"
       >
-        <div className="relative h-32 min-w-max pr-12 pt-6">
-          {/* Time Scale Markers (Top) */}
-          <div className="absolute top-0 left-0 w-full h-4 flex items-start pointer-events-none">
+        <div className="relative min-w-max pr-12 pt-10">
+          <div className="absolute top-0 left-0 w-full h-10 flex items-start pointer-events-none">
             {tickMarkers.map(m => (
               <div key={m} className="absolute flex flex-col items-center" style={{ left: `${m * 60}px` }}>
-                <div className={`w-[1px] ${m % 1 === 0 ? 'h-2.5 bg-white/40' : 'h-1.5 bg-white/20'}`} />
+                <div className={`w-[1px] ${m % 1 === 0 ? 'h-4 bg-white/40' : 'h-2 bg-white/20'}`} />
                 {m % 1 === 0 && (
-                  <span className="text-[9px] font-mono text-brand-gray mt-1">{m}</span>
+                  <span className="text-[10px] font-mono font-bold text-brand-gray mt-1">{m}s</span>
                 )}
               </div>
             ))}
           </div>
 
-          {/* Segments Container */}
-          <div className="flex items-end h-20">
-            {segments.filter(Boolean).map((segment, index) => {
-              const isVisible = (segment.startTime ?? Infinity) <= currentTime;
-              if (!isVisible) return null;
+          <div className="space-y-4">
+            {lanes.map((lane, laneIndex) => (
+              <div key={laneIndex} className="relative h-14 flex items-center">
+                {isMultiCore && (
+                  <div className="absolute -left-12 top-1/2 -translate-y-1/2 text-[10px] font-black text-white/20 uppercase tracking-tighter rotate-180 [writing-mode:vertical-lr]">
+                    Core {laneIndex + 1}
+                  </div>
+                )}
 
-              // Context switch indicator (vertical line)
-              const showContextSwitch = index > 0 && !segment.isIdle && !segments[index-1].isIdle;
+                {lane.filter(Boolean).map((segment, index) => {
+                  const isVisible = (segment.startTime ?? Infinity) <= currentTime;
+                  if (!isVisible) return null;
 
-              const duration = Math.min(segment.endTime || 0, currentTime) - (segment.startTime || 0);
-              const width = Math.max(0, duration * 60);
-              const fullWidth = Math.max(0, ((segment.endTime || 0) - (segment.startTime || 0)) * 60);
-              const originalProcess = safeProcesses.find(p => p && p.id === segment.processId);
+                  const duration = Math.min(segment.endTime || 0, currentTime) - (segment.startTime || 0);
+                  const width = Math.max(0, duration * 60);
+                  const fullWidth = Math.max(0, ((segment.endTime || 0) - (segment.startTime || 0)) * 60);
+                  const originalProcess = safeProcesses.find(p => p && p.id === segment.processId);
 
-              return (
-                <div
-                  key={index}
-                  className="relative h-16 transition-all"
-                  style={{ width: `${fullWidth}px` }}
-                  onMouseEnter={() => setHoveredSegment({ ...segment, originalProcess })}
-                  onMouseLeave={() => setHoveredSegment(null)}
-                >
-                  {showContextSwitch && (
-                    <div className="absolute left-0 top-0 bottom-0 w-px border-l border-dashed border-white/30 z-0" />
-                  )}
-                  {/* Segment Box */}
-                  <motion.div
-                    initial={{ opacity: 0, scaleX: 0 }}
-                    animate={{ opacity: 1, scaleX: 1 }}
-                    originX={0}
-                    className={`absolute inset-y-0 left-0 rounded-lg border flex items-center justify-center overflow-hidden shadow-lg ${
-                      segment.isIdle
-                      ? 'bg-white/5 border-white/10 border-dashed'
-                      : 'border-white/20'
-                    }`}
-                    style={{
-                      width: `${width}px`,
-                      background: segment.isIdle
-                        ? undefined
-                        : `linear-gradient(135deg, ${segment.color}40, ${segment.color}20)`,
-                      borderColor: segment.isIdle ? undefined : `${segment.color}80`
-                    }}
-                  >
-                    <span className={`text-xs font-bold ${segment.isIdle ? 'text-brand-gray/50' : 'text-white'}`}>
-                      {segment.processId || (segment.isIdle ? '' : 'N/A')}
-                    </span>
-
-                    {/* Subtle Shine Effect */}
-                    {!segment.isIdle && (
-                      <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-30 pointer-events-none" />
-                    )}
-                  </motion.div>
-                </div>
-              );
-            })}
+                  return (
+                    <div
+                      key={index}
+                      className="absolute h-12 transition-all"
+                      style={{
+                        left: `${segment.startTime * 60}px`,
+                        width: `${fullWidth}px`
+                      }}
+                      onMouseEnter={() => setHoveredSegment({ ...segment, originalProcess })}
+                      onMouseLeave={() => setHoveredSegment(null)}
+                    >
+                      <motion.div
+                        initial={{ opacity: 0, scaleX: 0 }}
+                        animate={{ opacity: 1, scaleX: 1 }}
+                        originX={0}
+                        className={`absolute inset-y-0 left-0 rounded-lg border flex items-center justify-center overflow-hidden shadow-lg ${
+                          segment.isIdle
+                          ? 'bg-white/5 border-white/10 border-dashed'
+                          : 'border-white/20'
+                        }`}
+                        style={{
+                          width: `${width}px`,
+                          background: segment.isIdle
+                            ? undefined
+                            : `linear-gradient(135deg, ${segment.color}40, ${segment.color}20)`,
+                          borderColor: segment.isIdle ? undefined : `${segment.color}80`
+                        }}
+                      >
+                        <span className={`text-[10px] font-bold ${segment.isIdle ? 'text-brand-gray/30' : 'text-white'}`}>
+                          {segment.processId === 'IDLE' ? '' : segment.processId}
+                        </span>
+                        {!segment.isIdle && (
+                          <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-30 pointer-events-none" />
+                        )}
+                      </motion.div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
 
-          {/* Current Time Indicator */}
           <div
-            className="absolute top-0 bottom-6 w-[2px] bg-brand-cyan shadow-[0_0_15px_rgba(34,211,238,0.6)] z-10 transition-all pointer-events-none"
+            className="absolute top-0 bottom-0 w-[2px] bg-brand-cyan shadow-[0_0_15px_rgba(34,211,238,0.6)] z-10 transition-all pointer-events-none"
             style={{ left: `${currentTime * 60}px` }}
           >
             <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-brand-cyan border-2 border-brand-navy shadow-lg" />
@@ -140,7 +138,6 @@ const GanttChart = ({ segments = [], currentTime = 0, totalTime = 0, processes =
         </div>
       </div>
 
-      {/* Tooltip Overlay */}
       <AnimatePresence>
         {hoveredSegment && (
           <motion.div

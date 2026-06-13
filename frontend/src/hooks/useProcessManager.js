@@ -14,29 +14,72 @@ const PREDEFINED_COLORS = [
 ];
 
 const SAMPLE_DATASETS = {
-  'Simple Example': [
-    { id: 'P1', arrivalTime: 0, burstTime: 4, priority: 1, color: PREDEFINED_COLORS[0] },
-    { id: 'P2', arrivalTime: 1, burstTime: 3, priority: 2, color: PREDEFINED_COLORS[1] },
-    { id: 'P3', arrivalTime: 2, burstTime: 1, priority: 3, color: PREDEFINED_COLORS[2] },
-  ],
-  'Mixed Arrival Times': [
-    { id: 'P1', arrivalTime: 0, burstTime: 8, priority: 1, color: PREDEFINED_COLORS[0] },
-    { id: 'P2', arrivalTime: 5, burstTime: 2, priority: 2, color: PREDEFINED_COLORS[1] },
-    { id: 'P3', arrivalTime: 1, burstTime: 6, priority: 3, color: PREDEFINED_COLORS[2] },
-    { id: 'P4', arrivalTime: 6, burstTime: 4, priority: 4, color: PREDEFINED_COLORS[3] },
-  ],
-  'Priority Heavy': [
-    { id: 'P1', arrivalTime: 0, burstTime: 5, priority: 10, color: PREDEFINED_COLORS[0] },
-    { id: 'P2', arrivalTime: 0, burstTime: 4, priority: 1, color: PREDEFINED_COLORS[1] },
-    { id: 'P3', arrivalTime: 0, burstTime: 2, priority: 5, color: PREDEFINED_COLORS[2] },
-    { id: 'P4', arrivalTime: 0, burstTime: 1, priority: 8, color: PREDEFINED_COLORS[3] },
-  ],
-  'Round Robin Demo': [
-    { id: 'P1', arrivalTime: 0, burstTime: 5, priority: 1, color: PREDEFINED_COLORS[0] },
-    { id: 'P2', arrivalTime: 1, burstTime: 4, priority: 1, color: PREDEFINED_COLORS[1] },
-    { id: 'P3', arrivalTime: 2, burstTime: 2, priority: 1, color: PREDEFINED_COLORS[2] },
-    { id: 'P4', arrivalTime: 3, burstTime: 1, priority: 1, color: PREDEFINED_COLORS[3] },
-  ],
+  'Simple Example': {
+    description: 'Basic introduction to sequential process arrival and execution.',
+    data: [
+      { id: 'P1', arrivalTime: 0, burstTime: 4, priority: 1, color: PREDEFINED_COLORS[0] },
+      { id: 'P2', arrivalTime: 1, burstTime: 3, priority: 2, color: PREDEFINED_COLORS[1] },
+      { id: 'P3', arrivalTime: 2, burstTime: 1, priority: 3, color: PREDEFINED_COLORS[2] },
+    ]
+  },
+  'Mixed Arrival Times': {
+    description: 'Processes arriving at different intervals, testing queue management.',
+    data: [
+      { id: 'P1', arrivalTime: 0, burstTime: 8, priority: 1, color: PREDEFINED_COLORS[0] },
+      { id: 'P2', arrivalTime: 5, burstTime: 2, priority: 2, color: PREDEFINED_COLORS[1] },
+      { id: 'P3', arrivalTime: 1, burstTime: 6, priority: 3, color: PREDEFINED_COLORS[2] },
+      { id: 'P4', arrivalTime: 6, burstTime: 4, priority: 4, color: PREDEFINED_COLORS[3] },
+    ]
+  },
+  'Priority Heavy': {
+    description: 'Processes with varying importance levels to demonstrate priority-based preemption.',
+    data: [
+      { id: 'P1', arrivalTime: 0, burstTime: 5, priority: 10, color: PREDEFINED_COLORS[0] },
+      { id: 'P2', arrivalTime: 0, burstTime: 4, priority: 1, color: PREDEFINED_COLORS[1] },
+      { id: 'P3', arrivalTime: 0, burstTime: 2, priority: 5, color: PREDEFINED_COLORS[2] },
+      { id: 'P4', arrivalTime: 0, burstTime: 1, priority: 8, color: PREDEFINED_COLORS[3] },
+    ]
+  },
+  'Round Robin Demo': {
+    description: 'Perfectly balanced burst times to show clean time-slicing cycles.',
+    data: [
+      { id: 'P1', arrivalTime: 0, burstTime: 5, priority: 1, color: PREDEFINED_COLORS[0] },
+      { id: 'P2', arrivalTime: 1, burstTime: 4, priority: 1, color: PREDEFINED_COLORS[1] },
+      { id: 'P3', arrivalTime: 2, burstTime: 2, priority: 1, color: PREDEFINED_COLORS[2] },
+      { id: 'P4', arrivalTime: 3, burstTime: 1, priority: 1, color: PREDEFINED_COLORS[3] },
+    ]
+  },
+  'Multi-Core Demo': {
+    description: 'High volume of processes designed for parallel execution across 2-8 cores.',
+    data: [
+      { id: 'P1', arrivalTime: 0, burstTime: 10, priority: 1, color: PREDEFINED_COLORS[0] },
+      { id: 'P2', arrivalTime: 0, burstTime: 8, priority: 2, color: PREDEFINED_COLORS[1] },
+      { id: 'P3', arrivalTime: 1, burstTime: 6, priority: 3, color: PREDEFINED_COLORS[2] },
+      { id: 'P4', arrivalTime: 1, burstTime: 4, priority: 4, color: PREDEFINED_COLORS[3] },
+      { id: 'P5', arrivalTime: 2, burstTime: 7, priority: 1, color: PREDEFINED_COLORS[4] },
+      { id: 'P6', arrivalTime: 2, burstTime: 5, priority: 2, color: PREDEFINED_COLORS[5] },
+    ]
+  },
+  'CPU Idle Demo': {
+    description: 'Large gaps between process arrivals to demonstrate CPU inactivity.',
+    data: [
+      { id: 'P1', arrivalTime: 0, burstTime: 3, priority: 1, color: PREDEFINED_COLORS[0] },
+      { id: 'P2', arrivalTime: 8, burstTime: 4, priority: 1, color: PREDEFINED_COLORS[1] },
+    ]
+  },
+  'Heavy Load Demo': {
+    description: 'Stress test with many overlapping processes to compare algorithm efficiency under pressure.',
+    data: [
+      { id: 'P1', arrivalTime: 0, burstTime: 15, priority: 1, color: PREDEFINED_COLORS[0] },
+      { id: 'P2', arrivalTime: 1, burstTime: 12, priority: 1, color: PREDEFINED_COLORS[1] },
+      { id: 'P3', arrivalTime: 2, burstTime: 10, priority: 1, color: PREDEFINED_COLORS[2] },
+      { id: 'P4', arrivalTime: 3, burstTime: 8, priority: 1, color: PREDEFINED_COLORS[3] },
+      { id: 'P5', arrivalTime: 4, burstTime: 6, priority: 1, color: PREDEFINED_COLORS[4] },
+      { id: 'P6', arrivalTime: 5, burstTime: 4, priority: 1, color: PREDEFINED_COLORS[5] },
+      { id: 'P7', arrivalTime: 6, burstTime: 2, priority: 1, color: PREDEFINED_COLORS[6] },
+      { id: 'P8', arrivalTime: 7, burstTime: 1, priority: 1, color: PREDEFINED_COLORS[7] },
+    ]
+  },
 };
 
 export const useProcessManager = () => {
@@ -101,21 +144,54 @@ export const useProcessManager = () => {
   };
 
   const loadSampleDataset = (name) => {
-    const dataset = SAMPLE_DATASETS[name];
-    if (dataset && Array.isArray(dataset)) {
-      const validDataset = dataset.filter(validateProcess);
+    const entry = SAMPLE_DATASETS[name];
+    if (entry && entry.data && Array.isArray(entry.data)) {
+      const validDataset = entry.data.filter(validateProcess);
       setProcesses(validDataset);
     }
   };
 
+  const getDatasetDescription = (name) => {
+    return SAMPLE_DATASETS[name]?.description || '';
+  };
+
+  const saveWorkspace = (name, config) => {
+    const workspaces = JSON.parse(localStorage.getItem('schedulix_workspaces') || '{}');
+    workspaces[name] = {
+      processes,
+      config,
+      timestamp: new Date().toISOString()
+    };
+    localStorage.setItem('schedulix_workspaces', JSON.stringify(workspaces));
+  };
+
+  const loadWorkspace = (name) => {
+    const workspaces = JSON.parse(localStorage.getItem('schedulix_workspaces') || '{}');
+    const workspace = workspaces[name];
+    if (workspace) {
+      setProcesses(workspace.processes);
+      return workspace.config;
+    }
+    return null;
+  };
+
+  const getSavedWorkspaces = () => {
+    return JSON.parse(localStorage.getItem('schedulix_workspaces') || '{}');
+  };
+
   return {
     processes,
+    setProcesses,
     addProcess,
     updateProcess,
     deleteProcess,
     clearProcesses,
     generateRandomProcesses,
     loadSampleDataset,
+    saveWorkspace,
+    loadWorkspace,
+    getSavedWorkspaces,
+    getDatasetDescription,
     sampleDatasets: Object.keys(SAMPLE_DATASETS),
   };
 };

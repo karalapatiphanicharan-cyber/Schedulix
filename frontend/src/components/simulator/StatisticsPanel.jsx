@@ -62,7 +62,10 @@ const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle',
       const completedResults = results.filter(r => (r.endTime ?? Infinity) <= currentTime);
 
       const liveMetrics = results.map(process => {
-        const segments = metrics.segments?.filter(s => s.processId === process.id) || [];
+        const isMultiCore = Array.isArray(metrics.segments) && Array.isArray(metrics.segments[0]);
+        const allSegments = isMultiCore ? metrics.segments.flat() : (metrics.segments || []);
+        const segments = allSegments.filter(s => s.processId === process.id) || [];
+
         const executedBurst = segments
           .filter(s => s.startTime < currentTime)
           .reduce((acc, s) => acc + (Math.min(s.endTime, currentTime) - s.startTime), 0);
@@ -81,12 +84,20 @@ const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle',
       const avgTurnaround = liveMetrics.reduce((acc, m) => acc + m.turnaroundTime, 0) / results.length;
       const throughput = completedResults.length / currentTime;
 
-      const segmentsArray = Array.isArray(metrics.segments) ? metrics.segments : [];
-      const idleTimeSoFar = segmentsArray
-        .filter(s => s.isIdle && s.startTime < currentTime)
-        .reduce((acc, s) => acc + (Math.min(s.endTime, currentTime) - s.startTime), 0) || 0;
+      const isMultiCore = Array.isArray(metrics.segments) && Array.isArray(metrics.segments[0]);
+      const lanes = isMultiCore ? metrics.segments : [metrics.segments].filter(Boolean);
 
-      const utilization = Math.max(0, Math.min(100, ((currentTime - idleTimeSoFar) / currentTime) * 100));
+      const totalIdleTimeSoFar = lanes.reduce((acc, lane) => {
+        return acc + lane
+          .filter(s => s.isIdle && s.startTime < currentTime)
+          .reduce((sAcc, s) => sAcc + (Math.min(s.endTime, currentTime) - s.startTime), 0);
+      }, 0);
+
+      const numLanes = lanes.length;
+      const totalPossibleTime = currentTime * numLanes;
+      const utilization = totalPossibleTime > 0
+        ? Math.max(0, Math.min(100, ((totalPossibleTime - totalIdleTimeSoFar) / totalPossibleTime) * 100))
+        : 0;
 
       setStats(prev => [
         { ...prev[0], value: avgWaiting },
@@ -136,16 +147,41 @@ const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle',
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-6 pt-6 border-t border-white/5 flex flex-wrap items-center justify-between gap-4"
+            className="mt-6 pt-6 border-t border-white/5"
           >
+            {Array.isArray(metrics.coreUtilization) && metrics.coreUtilization.length > 1 && (
+              <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                {metrics.coreUtilization.map((util, i) => (
+                  <div key={i} className="bg-white/5 p-3 rounded-xl border border-white/5">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[9px] font-black text-brand-gray uppercase tracking-widest">Core {i + 1}</span>
+                      <span className="text-xs font-mono font-bold text-brand-blue">{util.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden p-[1px] border border-white/5">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${util}%` }}
+                        className="h-full bg-brand-blue rounded-full shadow-[0_0_8px_rgba(59,130,246,0.3)]"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center space-x-6">
                 <div className="flex flex-col">
                     <span className="text-[9px] text-brand-gray/40 font-black uppercase tracking-widest mb-1">Context Switches</span>
                     <span className="text-xl font-mono font-bold text-white">
-                      {(metrics.segments || [])
-                        .filter((s, i, arr) => i > 0 && s.startTime < currentTime && !s.isIdle && !arr[i-1].isIdle)
-                        .length ?? 0
-                      }
+                      {(() => {
+                        if (Array.isArray(metrics.segments) && Array.isArray(metrics.segments[0])) {
+                          return metrics.contextSwitches;
+                        }
+                        return (metrics.segments || [])
+                          .filter((s, i, arr) => i > 0 && s.startTime < currentTime && !s.isIdle && !arr[i-1].isIdle)
+                          .length ?? 0;
+                      })()}
                     </span>
                 </div>
                 <div className="flex flex-col">
@@ -157,6 +193,7 @@ const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle',
             <div className="flex items-center space-x-2 text-[10px] text-brand-gray italic bg-white/[0.02] px-4 py-2 rounded-xl">
                 <Activity size={12} className="text-brand-blue" />
                 <span>Results rounded to 2 decimal places</span>
+            </div>
             </div>
           </motion.div>
         )}

@@ -55,7 +55,7 @@ const ALGO_DETAILS = {
   }
 };
 
-const AlgorithmSelector = ({ selectedAlgorithm, onSelect, quantum, onQuantumChange, onLoadRecommended }) => {
+const AlgorithmSelector = ({ selectedAlgorithm, onSelect, quantum, onQuantumChange, onLoadRecommended, numCores, onCoresChange }) => {
   const algorithms = [
     { id: 'FCFS', name: 'First-Come, First-Served (FCFS)' },
     { id: 'SJF', name: 'Shortest Job First (SJF)' },
@@ -116,6 +116,36 @@ const AlgorithmSelector = ({ selectedAlgorithm, onSelect, quantum, onQuantumChan
               </div>
             </motion.div>
           )}
+        </div>
+
+        {/* Processor Configuration */}
+        <div className="mt-6 pt-6 border-t border-white/5">
+          <div className="flex items-center space-x-2 mb-4 text-brand-blue">
+            <Settings size={14} className="animate-spin-slow" />
+            <span className="text-[10px] font-black uppercase tracking-widest">Processor Configuration</span>
+          </div>
+
+          <div className="flex flex-col space-y-3">
+            <span className="text-[10px] font-bold text-brand-gray uppercase tracking-widest flex items-center justify-between">
+              <span>CPU Cores</span>
+              <span className="text-brand-blue">{numCores} Core{numCores > 1 ? 's' : ''}</span>
+            </span>
+            <div className="grid grid-cols-4 gap-2">
+              {[1, 2, 4, 8].map((count) => (
+                <button
+                  key={count}
+                  onClick={() => onCoresChange(count)}
+                  className={`py-2 rounded-lg text-xs font-bold transition-all border ${
+                    numCores === count
+                      ? 'bg-brand-blue border-brand-blue text-white shadow-lg shadow-brand-blue/20'
+                      : 'bg-white/5 border-white/5 text-brand-gray hover:border-white/10'
+                  }`}
+                >
+                  {count}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

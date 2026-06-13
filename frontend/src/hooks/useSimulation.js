@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+const HISTORY_STORAGE_KEY = 'schedulix_simulation_history';
+
 export const useSimulation = () => {
   const [playbackState, setPlaybackState] = useState('idle'); // idle, running, paused, finished
   const [currentTime, setCurrentTime] = useState(0);
@@ -8,6 +10,15 @@ export const useSimulation = () => {
   const [results, setResults] = useState(null);
   const [metrics, setMetrics] = useState(null);
   const [error, setError] = useState(null);
+  const [numCores, setNumCores] = useState(1);
+  const [history, setHistory] = useState(() => {
+    try {
+      const saved = localStorage.getItem(HISTORY_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
 
   const requestRef = useRef();
   const previousTimeRef = useRef();
@@ -60,13 +71,17 @@ export const useSimulation = () => {
     return () => cancelAnimationFrame(requestRef.current);
   }, [playbackState, animate]);
 
-  const runSimulation = async (processes, algorithm, quantum) => {
+  useEffect(() => {
+    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
+  }, [history]);
+
+  const runSimulation = async (processes, algorithm, quantum, cores = numCores) => {
     setError(null);
     try {
       const response = await fetch('http://localhost:5000/api/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ processes, algorithm, quantum })
+        body: JSON.stringify({ processes, algorithm, quantum, numCores: cores })
       });
 
       if (!response.ok) {
@@ -80,6 +95,18 @@ export const useSimulation = () => {
       setMetrics(data.metrics);
       setCurrentTime(0);
       setPlaybackState('running');
+
+      const historyEntry = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        algorithm,
+        numCores: cores,
+        processCount: processes.length,
+        metrics: data.metrics,
+        processes: processes,
+        quantum
+      };
+      setHistory(prev => [historyEntry, ...prev].slice(0, 20));
     } catch (err) {
       setError(err.message);
       setPlaybackState('idle');
@@ -108,6 +135,10 @@ export const useSimulation = () => {
     }
   };
 
+  const clearHistory = () => {
+    setHistory([]);
+  };
+
   return {
     playbackState,
     currentTime,
@@ -116,6 +147,10 @@ export const useSimulation = () => {
     results,
     metrics,
     error,
+    numCores,
+    setNumCores,
+    history,
+    clearHistory,
     runSimulation,
     pauseSimulation,
     resumeSimulation,

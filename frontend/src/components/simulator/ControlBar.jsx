@@ -193,10 +193,16 @@ const ControlBar = ({
                           onLoadDataset(dataset);
                           setIsDropdownOpen(false);
                         }}
-                        className="w-full text-left px-3 py-2.5 text-xs hover:bg-brand-blue/20 text-brand-gray hover:text-white transition-all rounded-lg flex items-center justify-between group"
+                        className="w-full text-left px-3 py-2.5 text-xs hover:bg-brand-blue/20 text-brand-gray hover:text-white transition-all rounded-lg group"
                       >
-                        <span>{dataset}</span>
-                        <div className="w-1.5 h-1.5 rounded-full bg-brand-blue opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="flex items-center justify-between mb-0.5">
+                            <span className="font-bold">{dataset}</span>
+                            <div className="w-1.5 h-1.5 rounded-full bg-brand-blue opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                        <p className="text-[9px] opacity-50 group-hover:opacity-80 transition-opacity line-clamp-1 italic">
+                            {/* Note: This assumes useProcessManager provides getDatasetDescription, but we'll use a safe fallback or pass it as prop if needed */}
+                            {dataset}
+                        </p>
                       </button>
                     ))}
                   </div>

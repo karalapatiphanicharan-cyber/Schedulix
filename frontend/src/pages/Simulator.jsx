@@ -5,8 +5,8 @@ import SectionTitle from '../components/SectionTitle';
 import { useProcessManager } from '../hooks/useProcessManager';
 import { useSimulation } from '../hooks/useSimulation';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { History, Save, FolderOpen } from 'lucide-react';
 
-// Simulator Components
 import ProcessForm from '../components/simulator/ProcessForm';
 import ProcessTable from '../components/simulator/ProcessTable';
 import ControlBar from '../components/simulator/ControlBar';
@@ -16,9 +16,11 @@ import ConfirmDialog from '../components/simulator/ConfirmDialog';
 import GanttChart from '../components/simulator/GanttChart';
 import ReadyQueue from '../components/simulator/ReadyQueue';
 import RunningProcess from '../components/simulator/RunningProcess';
-import CompletedProcesses from '../components/simulator/CompletedProcesses';
+import QueueInspector from '../components/simulator/QueueInspector';
 import StatisticsPanel from '../components/simulator/StatisticsPanel';
 import SimulationSummary from '../components/simulator/SimulationSummary';
+import EducationalCard from '../components/simulator/EducationalCard';
+import { workloadAnalyzer } from '../utils/workloadAnalyzer';
 
 const Simulator = () => {
   const [lastProcessId, setLastProcessId] = useState(null);
@@ -32,6 +34,9 @@ const Simulator = () => {
     clearProcesses,
     generateRandomProcesses,
     loadSampleDataset,
+    saveWorkspace,
+    loadWorkspace,
+    getSavedWorkspaces,
     sampleDatasets,
   } = useProcessManager();
 
@@ -48,16 +53,21 @@ const Simulator = () => {
     resumeSimulation,
     resetSimulation,
     setPlaybackSpeed,
-    seekTo
+    seekTo,
+    numCores,
+    setNumCores,
+    history,
+    clearHistory
   } = useSimulation();
 
-  // Monitor for context switches
   useEffect(() => {
     if (playbackState === 'running' && schedule?.segments) {
-      const currentSegment = schedule.segments.find(s => s.startTime <= currentTime && s.endTime > currentTime);
+      const isMultiCore = Array.isArray(schedule.segments) && Array.isArray(schedule.segments[0]);
+      const allSegments = isMultiCore ? schedule.segments.flat() : schedule.segments;
+
+      const currentSegment = allSegments.find(s => s && s.startTime <= currentTime && s.endTime > currentTime);
       if (currentSegment && !currentSegment.isIdle) {
         if (lastProcessId && lastProcessId !== currentSegment.processId) {
-          // Context switch occurred
           setContextSwitchNotify({
             from: lastProcessId,
             to: currentSegment.processId
@@ -77,13 +87,35 @@ const Simulator = () => {
   const [quantum, setQuantum] = useState(2);
   const [isConfirmClearOpen, setIsConfirmClearOpen] = useState(false);
   const [processToDelete, setProcessToDelete] = useState(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showWorkspaces, setShowWorkspaces] = useState(false);
 
   const isIdle = playbackState === 'idle';
+  const workload = processes.length > 0 ? workloadAnalyzer.analyze(processes) : null;
 
   const handleRunSimulation = () => {
     if (processes.length === 0) return;
     setLastProcessId(null);
-    runSimulation(processes, selectedAlgorithm, quantum);
+    runSimulation(processes, selectedAlgorithm, quantum, numCores);
+  };
+
+  const handleSaveWorkspace = () => {
+    const name = prompt("Enter workspace name:");
+    if (name) {
+      saveWorkspace(name, { selectedAlgorithm, quantum, numCores });
+      alert("Workspace saved!");
+    }
+  };
+
+  const handleLoadWorkspace = (name) => {
+    const config = loadWorkspace(name);
+    if (config) {
+      setSelectedAlgorithm(config.selectedAlgorithm);
+      setQuantum(config.quantum);
+      setNumCores(config.numCores);
+      setShowWorkspaces(false);
+      resetSimulation();
+    }
   };
 
   const handleAlgorithmChange = (algo) => {
@@ -112,7 +144,6 @@ const Simulator = () => {
         centered={false}
       />
 
-      {/* Context Switch Notification */}
       <AnimatePresence>
         {contextSwitchNotify && (
           <motion.div
@@ -140,9 +171,114 @@ const Simulator = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column - Configuration & Controls */}
         <div className="lg:col-span-4 space-y-6">
-          {/* Algorithm Selection */}
+          <div className="flex items-center space-x-2 mb-4">
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className={`flex-1 flex items-center justify-center space-x-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${showHistory ? 'bg-brand-blue text-white' : 'glass text-brand-gray hover:text-white'}`}
+            >
+              <History size={14} />
+              <span>History</span>
+            </button>
+            <button
+              onClick={() => setShowWorkspaces(!showWorkspaces)}
+              className={`flex-1 flex items-center justify-center space-x-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${showWorkspaces ? 'bg-brand-blue text-white' : 'glass text-brand-gray hover:text-white'}`}
+            >
+              <FolderOpen size={14} />
+              <span>Workspaces</span>
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {showHistory && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden mb-6"
+              >
+                <div className="glass p-4 border-l-4 border-brand-cyan">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-brand-cyan">Recent Simulations</h4>
+                    <button onClick={clearHistory} className="text-[9px] font-bold text-red-400 hover:underline">Clear All</button>
+                  </div>
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                    {history && history.length > 0 ? history.map((entry) => (
+                      <div key={entry.id} className="p-3 bg-white/5 rounded-lg border border-white/5 hover:border-white/10 transition-colors group">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-bold text-white">{entry.algorithm}</span>
+                          <span className="text-[9px] font-mono text-brand-gray">{new Date(entry.timestamp).toLocaleTimeString()}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] text-brand-gray">
+                          <span>{entry.processCount} processes • {entry.numCores} core(s)</span>
+                          <button
+                            onClick={() => {
+                              // Reload history entry
+                              clearProcesses();
+                              entry.processes.forEach(p => addProcess(p));
+                              setSelectedAlgorithm(entry.algorithm);
+                              setQuantum(entry.quantum || 2);
+                              setNumCores(entry.numCores);
+                              setShowHistory(false);
+                            }}
+                            className="text-brand-blue opacity-0 group-hover:opacity-100 transition-opacity font-bold"
+                          >
+                            Restore
+                          </button>
+                        </div>
+                      </div>
+                    )) : (
+                      <p className="text-center py-4 text-xs text-brand-gray italic">No history yet.</p>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {showWorkspaces && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden mb-6"
+              >
+                <div className="glass p-4 border-l-4 border-brand-blue">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-brand-blue">Saved Workspaces</h4>
+                    <button onClick={handleSaveWorkspace} className="flex items-center space-x-1 text-[10px] font-bold text-brand-blue hover:underline">
+                      <Save size={12} />
+                      <span>Save Current</span>
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {Object.keys(getSavedWorkspaces()).length > 0 ? Object.entries(getSavedWorkspaces()).map(([name, ws]) => (
+                      <button
+                        key={name}
+                        onClick={() => handleLoadWorkspace(name)}
+                        className="w-full p-3 bg-white/5 rounded-lg border border-white/5 hover:border-brand-blue/30 text-left transition-all group"
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-bold text-white group-hover:text-brand-blue transition-colors">{name}</span>
+                          <span className="text-[9px] font-mono text-brand-gray">{new Date(ws.timestamp).toLocaleDateString()}</span>
+                        </div>
+                        <p className="text-[10px] text-brand-gray">{ws.processes.length} processes • {ws.config.selectedAlgorithm}</p>
+                      </button>
+                    )) : (
+                      <div className="text-center py-4 space-y-3">
+                        <p className="text-xs text-brand-gray italic">No workspaces saved.</p>
+                        <button onClick={handleSaveWorkspace} className="px-4 py-2 bg-brand-blue/10 text-brand-blue text-[10px] font-black uppercase tracking-widest rounded-lg border border-brand-blue/20">
+                          Create First Workspace
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className={!isIdle ? 'opacity-50 pointer-events-none transition-opacity' : ''}>
             <AlgorithmSelector
               selectedAlgorithm={selectedAlgorithm}
@@ -150,10 +286,11 @@ const Simulator = () => {
               quantum={quantum}
               onQuantumChange={setQuantum}
               onLoadRecommended={loadSampleDataset}
+              numCores={numCores}
+              onCoresChange={setNumCores}
             />
           </div>
 
-          {/* Process Input */}
           <div className={!isIdle ? 'opacity-50 pointer-events-none transition-opacity' : ''}>
             <ProcessForm
               onAdd={(p) => addProcess(p)}
@@ -162,7 +299,6 @@ const Simulator = () => {
             />
           </div>
 
-          {/* Simulation Controls */}
           <ControlBar
             playbackState={playbackState}
             currentTime={currentTime}
@@ -182,16 +318,13 @@ const Simulator = () => {
           />
         </div>
 
-        {/* Right Column - Visualizations & Table */}
         <div className="lg:col-span-8 space-y-6">
-          {/* Gantt Chart */}
           <GanttChart
             segments={schedule?.segments}
             currentTime={currentTime}
             totalTime={metrics?.totalTime}
           />
 
-          {/* Queues and CPU */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <ReadyQueue
               processes={processes}
@@ -203,13 +336,13 @@ const Simulator = () => {
               schedule={schedule}
               processes={processes}
             />
-            <CompletedProcesses
+            <QueueInspector
+              processes={processes}
               currentTime={currentTime}
               schedule={schedule}
             />
           </div>
 
-          {/* Process Table or Empty State */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold">Process List</h3>
@@ -232,7 +365,29 @@ const Simulator = () => {
             )}
           </div>
 
-          {/* Statistics */}
+          {workload && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass p-6 border-l-4 border-yellow-500 bg-yellow-500/5"
+            >
+              <div className="flex items-center space-x-2 mb-4 text-yellow-500">
+                <Zap size={18} />
+                <h4 className="font-bold uppercase tracking-widest text-xs">Workload Analysis</h4>
+              </div>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {workload.characteristics.map((char, i) => (
+                  <span key={i} className="px-2 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded text-[10px] font-bold text-yellow-600 uppercase">
+                    {char}
+                  </span>
+                ))}
+              </div>
+              <p className="text-sm text-brand-gray">
+                <span className="font-bold text-white">Recommendation:</span> {workload.recommendation}
+              </p>
+            </motion.div>
+          )}
+
           <StatisticsPanel
             results={results}
             metrics={metrics}
@@ -240,7 +395,8 @@ const Simulator = () => {
             currentTime={currentTime}
           />
 
-          {/* Simulation Summary Overlay */}
+          <EducationalCard algorithm={selectedAlgorithm} />
+
           {playbackState === 'finished' && (
             <SimulationSummary
               results={results}
@@ -254,7 +410,6 @@ const Simulator = () => {
         </div>
       </div>
 
-      {/* Confirmation Dialogs */}
       <ConfirmDialog
         isOpen={isConfirmClearOpen}
         title="Clear All Processes?"

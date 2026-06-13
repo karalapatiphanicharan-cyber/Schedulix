@@ -55,9 +55,11 @@ const ProcessTable = ({ processes = [], onUpdate = () => {}, onDelete = () => {}
     const result = results.find(r => r && r.id === processId);
     if (result && (result.endTime ?? Infinity) <= currentTime) return 'completed';
 
-    const segments = schedule?.segments || [];
-    const currentSegment = segments.find(s => s && s.startTime <= currentTime && s.endTime > currentTime);
-    if (currentSegment && currentSegment.processId === processId) return 'running';
+    const isMultiCore = Array.isArray(schedule?.segments) && Array.isArray(schedule?.segments[0]);
+    const allSegments = isMultiCore ? schedule.segments.flat() : (schedule?.segments || []);
+
+    const currentSegment = allSegments.find(s => s && s.startTime <= currentTime && s.endTime > currentTime && s.processId === processId);
+    if (currentSegment) return 'running';
 
     const safeProcesses = Array.isArray(processes) ? processes.filter(Boolean) : [];
     if (safeProcesses.find(p => p && p.id === processId)?.arrivalTime <= currentTime) return 'waiting';
@@ -108,7 +110,9 @@ const ProcessTable = ({ processes = [], onUpdate = () => {}, onDelete = () => {}
                 const stateClass = getStateStyles(state);
 
                 const result = schedule?.results?.find(r => r.id === process.id);
-                const segments = schedule?.segments?.filter(s => s.processId === process.id) || [];
+                const isMultiCore = Array.isArray(schedule?.segments) && Array.isArray(schedule?.segments[0]);
+                const allSegments = isMultiCore ? schedule?.segments?.flat() : (schedule?.segments || []);
+                const segments = allSegments.filter(s => s.processId === process.id) || [];
 
                 const executedBurst = segments
                   .filter(s => s.startTime < currentTime)
