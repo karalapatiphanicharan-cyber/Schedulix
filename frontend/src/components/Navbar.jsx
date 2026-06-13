@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Rocket } from 'lucide-react';
-import ThemeToggle from './ThemeToggle';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,21 +9,20 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Simulator', path: '/simulator' },
-    { name: 'Compare', path: '/compare' },
     { name: 'About', path: '/about' },
   ];
 
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="sticky top-0 z-50 glass bg-brand-navy bg-opacity-70 backdrop-blur-lg border-b border-white border-opacity-10">
+    <nav className="sticky top-0 z-50 glass bg-brand-navy/80 backdrop-blur-xl border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link to="/" className="flex items-center space-x-3">
-              <img src="/schedulix-logo.png" alt="Schedulix Logo" className="h-9 w-auto" />
-              <span className="text-xl font-bold tracking-tight text-white hidden sm:block">
+            <Link to="/" className="flex items-center space-x-3 group">
+              <img src="/schedulix-logo.png" alt="Schedulix Logo" className="h-10 w-auto transition-transform group-hover:scale-110" />
+              <span className="text-2xl font-bold tracking-tight text-white hidden sm:block">
                 Schedulix
               </span>
             </Link>
@@ -49,10 +47,9 @@ const Navbar = () => {
 
           {/* Right actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <ThemeToggle />
             <Link
               to="/simulator"
-              className="flex items-center space-x-2 bg-brand-blue hover:bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-all transform hover:scale-105"
+              className="flex items-center space-x-2 bg-brand-blue hover:bg-blue-600 text-white px-6 py-2.5 rounded-full text-sm font-bold transition-all transform hover:scale-105 shadow-lg shadow-brand-blue/20"
             >
               <Rocket size={16} />
               <span>Launch Simulator</span>
@@ -61,7 +58,6 @@ const Navbar = () => {
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
-            <ThemeToggle />
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-brand-gray hover:text-white p-2"

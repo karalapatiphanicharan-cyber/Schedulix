@@ -11,7 +11,6 @@ import {
   Cpu,
   Layout,
   LineChart,
-  PieChart,
   Repeat
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -59,13 +58,8 @@ const Home = () => {
       icon: LineChart
     },
     {
-      title: "Algorithm Comparison",
-      description: "Compare multiple algorithms side-by-side on the same workload to see which performs best.",
-      icon: PieChart
-    },
-    {
       title: "Multi-Core Simulation",
-      description: "Advanced simulation of modern multi-core processors. (Coming Soon)",
+      description: "Advanced simulation of modern multi-core processors, supporting up to 8 cores.",
       icon: Cpu
     }
   ];
@@ -75,14 +69,14 @@ const Home = () => {
       <Hero />
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-white bg-opacity-[0.02]">
+      <section id="features" className="py-24 md:py-32 bg-white bg-opacity-[0.01]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionTitle
             title="Comprehensive Scheduling Suite"
-            subtitle="Explore a wide range of algorithms and visualization tools designed for students and professionals."
+            subtitle="Deep dive into a wide range of industry-standard algorithms and high-fidelity visualization tools."
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <FeatureCard
                 key={index}

@@ -15,7 +15,6 @@ const Footer = () => {
           <div className="flex space-x-6 text-brand-gray text-sm">
             <Link to="/" className="hover:text-brand-blue transition-colors">Home</Link>
             <Link to="/simulator" className="hover:text-brand-blue transition-colors">Simulator</Link>
-            <Link to="/compare" className="hover:text-brand-blue transition-colors">Compare</Link>
             <Link to="/about" className="hover:text-brand-blue transition-colors">About</Link>
           </div>
 
