@@ -1,40 +1,199 @@
-# Schedulix — CPU Scheduling Simulator
+# 🚀 Schedulix – CPU Scheduling Simulator
 
-Schedulix is a premium full-stack web application designed to visualize and simulate Operating System CPU scheduling algorithms.
+Schedulix is a modern, interactive **Operating System CPU Scheduling Simulator** built with **React, Vite, Node.js, and Express**. It helps students and developers visualize how popular CPU scheduling algorithms work through an intuitive interface, process management tools, live execution controls, and performance metrics.
 
-## Features (Phase 1)
-- Polished, responsive UI with glassmorphism design.
-- Comprehensive landing page with feature showcase.
-- Interactive Simulator and Algorithm Comparison dashboard layouts.
-- Dark mode by default with brand-consistent styling.
-- Educational content about CPU scheduling.
+## 🌐 Live Demo
 
-## Tech Stack
-- **Frontend**: React (Vite), Tailwind CSS, Framer Motion, Lucide React.
-- **Backend**: Node.js, Express.js.
+**Frontend:** https://schedulix-theta.vercel.app
 
-## Getting Started
+---
 
-### Prerequisites
-- Node.js (v18+)
-- npm or yarn
+## ✨ Features
 
-### Installation
+* 🎯 Interactive CPU Scheduling Simulator
+* ➕ Add, edit, and remove processes
+* ⚡ Generate sample process datasets
+* 📂 Load predefined datasets
+* 📊 Live Gantt Chart visualization
+* 📋 Ready Queue visualization
+* 🖥️ Running Process indicator
+* ✅ Completed Process tracking
+* 📈 Performance statistics dashboard
+* ▶️ Run, Pause, Resume, Reset, and Clear controls
+* 🌙 Premium dark-themed responsive UI
+* 🛡️ Defensive error handling for robust execution
+* 📱 Responsive design for desktop and mobile devices
 
-1. Clone the repository.
-2. Install frontend dependencies:
-   \`cd frontend && npm install\`
-3. Install backend dependencies:
-   \`cd backend && npm install\`
+---
 
-### Running the App
+## 🧠 Supported Scheduling Algorithms
 
-1. Start the backend:
-   \`cd backend && npm run dev\`
-2. Start the frontend:
-   \`cd frontend && npm run dev\`
+* First Come First Served (FCFS)
+* Shortest Job First (SJF)
+* Shortest Remaining Time First (SRTF)
+* Round Robin (RR)
+* Priority Scheduling
 
-## Roadmap
-- **Phase 2**: Core Scheduling Algorithms (FCFS, SJF, SRTF, RR, Priority).
-- **Phase 3**: Advanced Analytics & Import/Export.
-- **Phase 4**: Multi-Core Simulation.
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+* React
+* Vite
+* JavaScript
+* Tailwind CSS
+* React Router
+
+### Backend
+
+* Node.js
+* Express.js
+
+### Deployment
+
+* Frontend: Vercel
+* Backend: Render
+
+---
+
+## 📂 Project Structure
+
+```text
+Schedulix/
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── layouts/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   ├── utils/
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── package.json
+│   └── vite.config.js
+│
+├── backend/
+│   ├── routes/
+│   ├── controllers/
+│   ├── package.json
+│   └── server.js
+│
+└── README.md
+```
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/karalapatiphanicharan-cyber/Schedulix.git
+cd Schedulix
+```
+
+---
+
+### 2. Run the Backend
+
+```bash
+cd backend
+npm install
+npm start
+```
+
+The backend will start on the configured port (typically `5000` locally).
+
+---
+
+### 3. Run the Frontend
+
+Open a new terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The Vite development server will typically be available at:
+
+```text
+http://localhost:5173
+```
+
+---
+
+## 🎮 How to Use
+
+1. Open the Simulator page.
+2. Select a scheduling algorithm.
+3. Add your own processes or generate sample data.
+4. Click **Run** to start the simulation.
+5. Observe:
+
+   * Gantt Chart
+   * Ready Queue
+   * Running Process
+   * Completed Processes
+   * Performance Statistics
+6. Use Pause, Reset, or Clear controls as needed.
+
+---
+
+## 📊 Metrics Displayed
+
+* Average Waiting Time
+* Average Turnaround Time
+* CPU Utilization
+* Throughput
+
+---
+
+## 🎯 Learning Objectives
+
+Schedulix is useful for:
+
+* Operating Systems coursework
+* CPU Scheduling visualization
+* Understanding algorithm behavior
+* Interview preparation
+* Classroom demonstrations
+* Self-paced learning
+
+---
+
+## 🌟 Highlights
+
+* Clean and modern UI
+* Responsive design
+* Stable simulator controls
+* Multiple scheduling algorithms
+* Interactive visualizations
+* Production-ready deployment
+* Beginner-friendly experience
+
+---
+
+## 🤝 Contributing
+
+Contributions, improvements, and bug fixes are welcome. Feel free to fork the repository, create a feature branch, and submit a pull request.
+
+---
+
+## 📄 License
+
+This project is intended for educational and learning purposes. You may adapt and extend it according to your needs.
+
+---
+
+## 👨‍💻 Author
+
+**Karalapati Phani Charan**
+
+GitHub: https://github.com/karalapatiphanicharan-cyber
