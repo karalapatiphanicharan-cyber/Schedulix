@@ -13,7 +13,8 @@ import ConfirmDialog from '../components/simulator/ConfirmDialog';
 import GanttChart from '../components/simulator/GanttChart';
 import StatisticsPanel from '../components/simulator/StatisticsPanel';
 import ComparisonSummary from '../components/simulator/ComparisonSummary';
-import { Play, RotateCcw, Trash2, Wand2 } from 'lucide-react';
+import { Play, RotateCcw, Trash2, Wand2, FileDown } from 'lucide-react';
+import { exportToPDF } from '../utils/pdfExport';
 
 const Compare = () => {
   const {
@@ -68,11 +69,31 @@ const Compare = () => {
   return (
     <ErrorBoundary>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24">
-        <SectionTitle
-          title="Algorithm Comparison"
-          subtitle="Compare two scheduling algorithms side-by-side using the same process dataset."
-          centered={false}
-        />
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <SectionTitle
+            title="Algorithm Comparison"
+            subtitle="Compare two scheduling algorithms side-by-side using the same process dataset."
+            centered={false}
+          />
+
+          {(simA.results && simB.results) && (
+            <button
+              onClick={() => exportToPDF({
+                algoA,
+                algoB,
+                processes,
+                metricsA: simA.metrics,
+                metricsB: simB.metrics,
+                resultsA: simA.results,
+                resultsB: simB.results
+              })}
+              className="flex items-center justify-center space-x-2 bg-brand-cyan hover:bg-cyan-600 text-brand-navy px-6 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg shadow-brand-cyan/20 h-fit self-start md:self-center"
+            >
+              <FileDown size={18} />
+              <span>Export Comparison PDF</span>
+            </button>
+          )}
+        </div>
 
         {(simA.error || simB.error) && (
           <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center justify-between">

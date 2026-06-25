@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, useSpring, useTransform, AnimatePresence } from 'framer-motion';
-import { Clock, Activity, Zap, Layers, HelpCircle } from 'lucide-react';
+import { Clock, Activity, Zap, Layers, HelpCircle, MousePointer2 } from 'lucide-react';
 
 const AnimatedNumber = ({ value }) => {
   const spring = useSpring(0, { stiffness: 100, damping: 30 });
@@ -53,6 +53,7 @@ const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle' 
   const [stats, setStats] = useState([
     { label: "Avg. Waiting", value: "—", unit: "ms", icon: Clock, description: "Average time in ready queue" },
     { label: "Avg. Turnaround", value: "—", unit: "ms", icon: Layers, description: "Time from arrival to finish" },
+    { label: "Avg. Response", value: "—", unit: "ms", icon: MousePointer2, description: "Time to first execution" },
     { label: "Throughput", value: "—", unit: "p/s", icon: Zap, description: "Processes finished per second" },
     { label: "Utilization", value: "Run simulation", unit: "%", icon: Activity, description: "CPU active time percentage" }
   ]);
@@ -61,19 +62,22 @@ const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle' 
     if (isSimulationStarted && Array.isArray(results) && results.length > 0 && metrics && metrics.totalTime > 0) {
       const avgWaiting = results.reduce((acc, r) => acc + (r.waitingTime || 0), 0) / results.length;
       const avgTurnaround = results.reduce((acc, r) => acc + (r.turnaroundTime || 0), 0) / results.length;
+      const avgResponse = results.reduce((acc, r) => acc + (r.responseTime || 0), 0) / results.length;
       const throughput = results.length / metrics.totalTime;
       const utilization = Math.max(0, Math.min(100, ((metrics.totalTime - (metrics.idleTime || 0)) / metrics.totalTime) * 100));
 
       setStats(prev => [
         { ...prev[0], value: avgWaiting },
         { ...prev[1], value: avgTurnaround },
-        { ...prev[2], value: throughput },
-        { ...prev[3], value: utilization }
+        { ...prev[2], value: avgResponse },
+        { ...prev[3], value: throughput },
+        { ...prev[4], value: utilization }
       ]);
     } else {
         setStats([
             { label: "Avg. Waiting", value: "—", unit: "ms", icon: Clock, description: "Average time in ready queue" },
             { label: "Avg. Turnaround", value: "—", unit: "ms", icon: Layers, description: "Time from arrival to finish" },
+            { label: "Avg. Response", value: "—", unit: "ms", icon: MousePointer2, description: "Time to first execution" },
             { label: "Throughput", value: "—", unit: "p/s", icon: Zap, description: "Processes finished per second" },
             { label: "Utilization", value: "Run simulation", unit: "%", icon: Activity, description: "CPU active time percentage" }
         ]);
@@ -97,7 +101,7 @@ const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle' 
         </AnimatePresence>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {stats.map((stat, i) => (
           <StatCard
             key={i}
