@@ -63,18 +63,8 @@ export const useSimulation = () => {
   const runSimulation = async (processes, algorithm, quantum) => {
     setError(null);
     try {
-      const response = await fetch('http://localhost:5000/api/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ processes, algorithm, quantum })
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to fetch simulation');
-      }
-
-      const data = await response.json();
+      const { simulate } = await import('../services/api');
+      const data = await simulate(processes, algorithm, quantum);
       setSchedule(data);
       setResults(data.results);
       setMetrics(data.metrics);
