@@ -7,6 +7,10 @@ import Simulator from './pages/Simulator';
 import Compare from './pages/Compare';
 import Information from './pages/Information';
 import About from './pages/About';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsConditions from './pages/TermsConditions';
+import Disclaimer from './pages/Disclaimer';
+import Contact from './pages/Contact';
 
 function App() {
   return (
@@ -20,6 +24,10 @@ function App() {
             <Route path="/compare" element={<Compare />} />
             <Route path="/information" element={<Information />} />
             <Route path="/about" element={<About />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsConditions />} />
+            <Route path="/disclaimer" element={<Disclaimer />} />
+            <Route path="/contact" element={<Contact />} />
           </Routes>
         </main>
         <Footer />
