@@ -14,34 +14,34 @@ const AnimatedNumber = ({ value }) => {
 };
 
 const StatCard = ({ label, value, unit, icon: Icon, description, isPlaceholder }) => (
-  <div className="bg-white/[0.03] p-4 rounded-2xl border border-white/5 relative overflow-hidden group hover:bg-white/[0.05] transition-all">
+  <div className="bg-white/[0.03] p-6 rounded-2xl border border-white/5 relative overflow-hidden group hover:bg-white/[0.05] transition-all">
     <div className="absolute -top-2 -right-2 p-4 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity pointer-events-none">
-      <Icon size={48} />
+      <Icon size={56} />
     </div>
 
-    <div className="flex items-center space-x-2 mb-3">
-      <div className="p-1.5 bg-brand-blue/10 rounded-lg text-brand-blue">
-        <Icon size={14} />
+    <div className="flex items-center space-x-2 mb-4">
+      <div className="p-2 bg-brand-blue/10 rounded-lg text-brand-blue">
+        <Icon size={16} />
       </div>
-      <p className="text-brand-gray text-[10px] font-black uppercase tracking-widest leading-none">{label}</p>
+      <p className="text-brand-gray text-xs font-black uppercase tracking-widest leading-none">{label}</p>
     </div>
 
     <div className="flex items-baseline space-x-1">
       {isPlaceholder ? (
-        <span className="text-sm font-bold text-brand-gray/30 italic">{value}</span>
+        <span className="text-base font-bold text-brand-gray/30 italic">{value}</span>
       ) : (
         <>
-          <span className="text-2xl font-black text-white">
+          <span className="text-3xl font-black text-white tracking-tight">
             <AnimatedNumber value={value} />
           </span>
-          {unit && <span className="text-[10px] font-bold text-brand-gray/50">{unit}</span>}
+          {unit && <span className="text-[11px] font-bold text-brand-gray/50 ml-1">{unit}</span>}
         </>
       )}
     </div>
 
-    <div className="mt-3 flex items-center text-[9px] text-brand-gray/40 group-hover:text-brand-gray/60 transition-colors">
-      <HelpCircle size={10} className="mr-1" />
-      <span className="italic">{description}</span>
+    <div className="mt-4 flex items-center text-[10px] text-brand-gray/40 group-hover:text-brand-gray/60 transition-colors">
+      <HelpCircle size={12} className="mr-1.5" />
+      <span className="italic leading-tight">{description}</span>
     </div>
   </div>
 );
@@ -101,7 +101,7 @@ const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle' 
         </AnimatePresence>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6">
         {stats.map((stat, i) => (
           <StatCard
             key={i}
