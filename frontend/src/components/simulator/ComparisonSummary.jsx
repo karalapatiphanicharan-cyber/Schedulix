@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Trophy, AlertCircle, CheckCircle2, Zap, Activity, Clock, Layers, MousePointer2 } from 'lucide-react';
 
 const ComparisonSummary = ({ algoA, algoB, metricsA, metricsB, resultsA, resultsB }) => {
   if (!metricsA || !metricsB || !resultsA || !resultsB) return null;
@@ -17,6 +17,7 @@ const ComparisonSummary = ({ algoA, algoB, metricsA, metricsB, resultsA, results
       valB: getAvg(resultsB, 'waitingTime'),
       unit: 'ms',
       lowerIsBetter: true,
+      icon: Clock,
     },
     {
       label: 'Avg. Turnaround Time',
@@ -24,6 +25,7 @@ const ComparisonSummary = ({ algoA, algoB, metricsA, metricsB, resultsA, results
       valB: getAvg(resultsB, 'turnaroundTime'),
       unit: 'ms',
       lowerIsBetter: true,
+      icon: Layers,
     },
     {
       label: 'Avg. Response Time',
@@ -31,6 +33,23 @@ const ComparisonSummary = ({ algoA, algoB, metricsA, metricsB, resultsA, results
       valB: getAvg(resultsB, 'responseTime'),
       unit: 'ms',
       lowerIsBetter: true,
+      icon: MousePointer2,
+    },
+    {
+      label: 'CPU Utilization',
+      valA: ((metricsA.totalTime - (metricsA.idleTime || 0)) / metricsA.totalTime) * 100,
+      valB: ((metricsB.totalTime - (metricsB.idleTime || 0)) / metricsB.totalTime) * 100,
+      unit: '%',
+      lowerIsBetter: false,
+      icon: Activity,
+    },
+    {
+      label: 'Throughput',
+      valA: resultsA.length / metricsA.totalTime,
+      valB: resultsB.length / metricsB.totalTime,
+      unit: 'p/s',
+      lowerIsBetter: false,
+      icon: Zap,
     },
     {
       label: 'Context Switches',
@@ -38,22 +57,19 @@ const ComparisonSummary = ({ algoA, algoB, metricsA, metricsB, resultsA, results
       valB: metricsB.contextSwitches || 0,
       unit: '',
       lowerIsBetter: true,
-    },
-    {
-        label: 'Throughput',
-        valA: resultsA.length / metricsA.totalTime,
-        valB: resultsB.length / metricsB.totalTime,
-        unit: 'p/s',
-        lowerIsBetter: false,
+      icon: Layers,
     }
   ];
 
   const getWinner = (stat) => {
-    if (stat.valA === stat.valB) return 'tie';
+    // Add small epsilon for floating point comparison
+    const diff = stat.valA - stat.valB;
+    if (Math.abs(diff) < 0.0001) return 'tie';
+
     if (stat.lowerIsBetter) {
-      return stat.valA < stat.valB ? 'A' : 'B';
+      return diff < 0 ? 'A' : 'B';
     }
-    return stat.valA > stat.valB ? 'A' : 'B';
+    return diff > 0 ? 'A' : 'B';
   };
 
   const winsA = stats.filter(s => getWinner(s) === 'A').length;
@@ -67,57 +83,88 @@ const ComparisonSummary = ({ algoA, algoB, metricsA, metricsB, resultsA, results
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass p-8 border-t-4 border-brand-blue"
+      className="glass p-8 border-t-4 border-brand-blue relative overflow-hidden"
     >
-      <div className="flex items-center justify-between mb-8">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none">
+        <Trophy size={200} />
+      </div>
+
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-6 relative z-10">
         <div>
-          <h3 className="text-2xl font-black text-white mb-2">Comparison Summary</h3>
-          <p className="text-brand-gray text-sm italic">Direct performance breakdown between both algorithms.</p>
+          <div className="flex items-center space-x-2 mb-2">
+            <div className="p-2 bg-brand-blue/10 rounded-lg text-brand-blue">
+                <Trophy size={20} />
+            </div>
+            <h3 className="text-2xl font-black text-white">Comparison Summary</h3>
+          </div>
+          <p className="text-brand-gray text-sm italic">Direct performance breakdown based on simulation results.</p>
         </div>
-        <div className="flex flex-col items-end">
-          <span className="text-[10px] font-black uppercase tracking-widest text-brand-gray mb-1">Overall Winner</span>
-          <div className="flex items-center space-x-2 bg-brand-blue/10 px-4 py-2 rounded-xl border border-brand-blue/20">
-            <Trophy size={16} className="text-yellow-400" />
-            <span className="text-lg font-black text-white">{overallWinner}</span>
+
+        <div className="flex flex-col items-start md:items-end">
+          <span className="text-[10px] font-black uppercase tracking-widest text-brand-gray mb-2">Overall Performance Winner</span>
+          <div className="flex items-center space-x-3 bg-gradient-to-r from-brand-blue/20 to-brand-cyan/20 px-6 py-3 rounded-2xl border border-white/10 shadow-xl backdrop-blur-md">
+            <Trophy size={24} className={overallWinner === 'Tie' ? "text-brand-gray" : "text-yellow-400"} />
+            <span className="text-xl font-black text-white tracking-tight">
+                {overallWinner === 'Tie' ? "It's a Draw" : overallWinner}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
         {stats.map((stat, index) => {
           const winner = getWinner(stat);
           return (
-            <div key={index} className="bg-white/[0.02] border border-white/5 rounded-2xl p-5 hover:bg-white/[0.04] transition-all">
-              <p className="text-[10px] font-black uppercase tracking-widest text-brand-gray mb-4">{stat.label}</p>
+            <div key={index} className="bg-white/[0.03] border border-white/5 rounded-2xl p-6 hover:bg-white/[0.06] transition-all group">
+              <div className="flex items-center space-x-2 mb-5">
+                <stat.icon size={14} className="text-brand-gray group-hover:text-brand-blue transition-colors" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-brand-gray">{stat.label}</p>
+              </div>
 
-              <div className="space-y-4">
-                <div className={`flex items-center justify-between p-3 rounded-xl ${winner === 'A' ? 'bg-green-500/10 border border-green-500/20' : 'bg-white/5 border border-transparent'}`}>
+              <div className="space-y-3">
+                {/* Algo A Row */}
+                <div className={`flex items-center justify-between p-4 rounded-xl transition-all ${winner === 'A' ? 'bg-green-500/10 border border-green-500/20 ring-1 ring-green-500/10' : 'bg-white/5 border border-transparent opacity-60'}`}>
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-brand-gray font-bold">{algoA}</span>
-                    <span className="text-lg font-mono font-black text-white">{stat.valA.toFixed(2)}{stat.unit}</span>
+                    <span className="text-[9px] text-brand-gray font-bold uppercase tracking-tighter mb-0.5">{algoA}</span>
+                    <span className="text-xl font-mono font-black text-white">{stat.valA.toFixed(2)}<span className="text-[10px] ml-0.5 opacity-50">{stat.unit}</span></span>
                   </div>
-                  {winner === 'A' && <CheckCircle2 size={18} className="text-green-400" />}
+                  {winner === 'A' && (
+                    <div className="bg-green-500/20 p-1.5 rounded-full">
+                        <CheckCircle2 size={16} className="text-green-400" />
+                    </div>
+                  )}
                 </div>
 
-                <div className={`flex items-center justify-between p-3 rounded-xl ${winner === 'B' ? 'bg-green-500/10 border border-green-500/20' : 'bg-white/5 border border-transparent'}`}>
+                {/* Algo B Row */}
+                <div className={`flex items-center justify-between p-4 rounded-xl transition-all ${winner === 'B' ? 'bg-green-500/10 border border-green-500/20 ring-1 ring-green-500/10' : 'bg-white/5 border border-transparent opacity-60'}`}>
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-brand-gray font-bold">{algoB}</span>
-                    <span className="text-lg font-mono font-black text-white">{stat.valB.toFixed(2)}{stat.unit}</span>
+                    <span className="text-[9px] text-brand-gray font-bold uppercase tracking-tighter mb-0.5">{algoB}</span>
+                    <span className="text-xl font-mono font-black text-white">{stat.valB.toFixed(2)}<span className="text-[10px] ml-0.5 opacity-50">{stat.unit}</span></span>
                   </div>
-                  {winner === 'B' && <CheckCircle2 size={18} className="text-green-400" />}
+                  {winner === 'B' && (
+                    <div className="bg-green-500/20 p-1.5 rounded-full">
+                        <CheckCircle2 size={16} className="text-green-400" />
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-white/5">
+              <div className="mt-5 pt-4 border-t border-white/5">
                 {winner === 'tie' ? (
-                  <div className="flex items-center space-x-2 text-[10px] text-brand-gray italic">
+                  <div className="flex items-center space-x-2 text-[10px] text-brand-gray/50 italic">
                     <AlertCircle size={12} />
-                    <span>Algorithms performed equally</span>
+                    <span>Identical Performance</span>
                   </div>
                 ) : (
-                  <div className="flex items-center space-x-2 text-[10px] text-green-400 font-bold uppercase tracking-wider">
-                    <Trophy size={12} />
-                    <span>{winner === 'A' ? algoA : algoB} is {stat.lowerIsBetter ? 'faster' : 'more efficient'}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2 text-[10px] text-green-400 font-black uppercase tracking-widest">
+                        <Zap size={12} className="fill-current" />
+                        <span>{winner === 'A' ? algoA : algoB} Leading</span>
+                    </div>
+                    <span className="text-[9px] text-brand-gray font-bold italic">
+                        {stat.lowerIsBetter ? 'Lower is better' : 'Higher is better'}
+                    </span>
                   </div>
                 )}
               </div>
