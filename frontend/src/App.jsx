@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import Simulator from './pages/Simulator';
 import Compare from './pages/Compare';
+import Information from './pages/Information';
 import About from './pages/About';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/simulator" element={<Simulator />} />
             <Route path="/compare" element={<Compare />} />
+            <Route path="/information" element={<Information />} />
             <Route path="/about" element={<About />} />
           </Routes>
         </main>
