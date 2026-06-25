@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { motion, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 import { Clock, Activity, Zap, Layers, HelpCircle, MousePointer2 } from 'lucide-react';
+import {
+  calculateAverages,
+  calculateThroughput,
+  calculateUtilization,
+  getContextSwitches,
+  getTotalTime
+} from '../../utils/metrics';
 
 const AnimatedNumber = ({ value }) => {
   const spring = useSpring(0, { stiffness: 100, damping: 30 });
@@ -13,8 +20,8 @@ const AnimatedNumber = ({ value }) => {
   return <motion.span className="animate-number">{display}</motion.span>;
 };
 
-const StatCard = ({ label, value, unit, icon: Icon, description, isPlaceholder }) => (
-  <div className="bg-white/[0.03] p-6 rounded-2xl border border-white/5 relative overflow-hidden group hover:bg-white/[0.05] transition-all">
+const StatCard = ({ label, value, unit, icon: Icon, description, isPlaceholder, className = "p-6" }) => (
+  <div className={`bg-white/[0.03] ${className} rounded-2xl border border-white/5 relative overflow-hidden group hover:bg-white/[0.05] transition-all`}>
     <div className="absolute -top-2 -right-2 p-4 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity pointer-events-none">
       <Icon size={56} />
     </div>
@@ -46,7 +53,13 @@ const StatCard = ({ label, value, unit, icon: Icon, description, isPlaceholder }
   </div>
 );
 
-const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle' }) => {
+const StatisticsPanel = ({
+  results = [],
+  metrics = null,
+  playbackState = 'idle',
+  gridClassName = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6",
+  cardClassName = "p-6"
+}) => {
   const isSimulationStarted = playbackState !== 'idle';
   const isFinished = playbackState === 'finished';
 
@@ -59,12 +72,10 @@ const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle' 
   ]);
 
   useEffect(() => {
-    if (isSimulationStarted && Array.isArray(results) && results.length > 0 && metrics && metrics.totalTime > 0) {
-      const avgWaiting = results.reduce((acc, r) => acc + (r.waitingTime || 0), 0) / results.length;
-      const avgTurnaround = results.reduce((acc, r) => acc + (r.turnaroundTime || 0), 0) / results.length;
-      const avgResponse = results.reduce((acc, r) => acc + (r.responseTime || 0), 0) / results.length;
-      const throughput = results.length / metrics.totalTime;
-      const utilization = Math.max(0, Math.min(100, ((metrics.totalTime - (metrics.idleTime || 0)) / metrics.totalTime) * 100));
+    if (isSimulationStarted && Array.isArray(results) && results.length > 0 && metrics && getTotalTime(metrics) > 0) {
+      const { avgWaiting, avgTurnaround, avgResponse } = calculateAverages(results);
+      const throughput = calculateThroughput(results.length, getTotalTime(metrics));
+      const utilization = calculateUtilization(getTotalTime(metrics), metrics.idleTime);
 
       setStats(prev => [
         { ...prev[0], value: avgWaiting },
@@ -101,11 +112,12 @@ const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle' 
         </AnimatePresence>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6">
+      <div className={gridClassName}>
         {stats.map((stat, i) => (
           <StatCard
             key={i}
             {...stat}
+            className={cardClassName}
             isPlaceholder={stat.value === '—' || stat.value === 'Run simulation'}
           />
         ))}
@@ -121,11 +133,11 @@ const StatisticsPanel = ({ results = [], metrics = null, playbackState = 'idle' 
             <div className="flex items-center space-x-6">
                 <div className="flex flex-col">
                     <span className="text-[9px] text-brand-gray/40 font-black uppercase tracking-widest mb-1">Context Switches</span>
-                    <span className="text-xl font-mono font-bold text-white">{metrics.contextSwitches ?? 0}</span>
+                    <span className="text-xl font-mono font-bold text-white">{getContextSwitches(metrics)}</span>
                 </div>
                 <div className="flex flex-col">
                     <span className="text-[9px] text-brand-gray/40 font-black uppercase tracking-widest mb-1">Total Simulation Time</span>
-                    <span className="text-xl font-mono font-bold text-brand-cyan">{(metrics.totalTime || 0).toFixed(1)}s</span>
+                    <span className="text-xl font-mono font-bold text-brand-cyan">{getTotalTime(metrics).toFixed(1)}s</span>
                 </div>
             </div>
 

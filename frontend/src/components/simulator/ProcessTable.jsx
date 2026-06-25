@@ -51,16 +51,26 @@ const ProcessTable = ({ processes = [], onUpdate = () => {}, onDelete = () => {}
   const getProcessState = (processId) => {
     if (isIdle) return 'neutral';
 
-    const results = schedule?.results || [];
-    const result = results.find(r => r && r.id === processId);
-    if (result && (result.endTime ?? Infinity) <= currentTime) return 'completed';
+    const schedules = Array.isArray(schedule) ? schedule : [schedule];
+    const results = schedules.flatMap(s => s?.results || []);
+    const segments = schedules.flatMap(s => s?.segments || []);
 
-    const segments = schedule?.segments || [];
-    const currentSegment = segments.find(s => s && s.startTime <= currentTime && s.endTime > currentTime);
-    if (currentSegment && currentSegment.processId === processId) return 'running';
+    // Running in any schedule
+    const isRunning = segments.some(s => s && s.startTime <= currentTime && s.endTime > currentTime && s.processId === processId);
+    if (isRunning) return 'running';
+
+    // Completed in all relevant schedules (where the process exists)
+    const relevantSchedules = schedules.filter(s => (s?.results || []).some(r => r && r.id === processId));
+    const isCompletedInAll = relevantSchedules.length > 0 && relevantSchedules.every(s => {
+      const result = s.results.find(r => r && r.id === processId);
+      return result && (result.endTime ?? Infinity) <= currentTime;
+    });
+
+    if (isCompletedInAll) return 'completed';
 
     const safeProcesses = Array.isArray(processes) ? processes.filter(Boolean) : [];
-    if (safeProcesses.find(p => p && p.id === processId)?.arrivalTime <= currentTime) return 'waiting';
+    const process = safeProcesses.find(p => p && p.id === processId);
+    if (process && process.arrivalTime <= currentTime) return 'waiting';
 
     return 'neutral';
   };

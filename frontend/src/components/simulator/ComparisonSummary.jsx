@@ -1,63 +1,76 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, AlertCircle, CheckCircle2, Zap, Activity, Clock, Layers, MousePointer2 } from 'lucide-react';
+import {
+  calculateAverages,
+  calculateThroughput,
+  calculateUtilization,
+  getContextSwitches,
+  getTotalTime
+} from '../../utils/metrics';
 
 const ComparisonSummary = ({ algoA, algoB, metricsA, metricsB, resultsA, resultsB }) => {
   if (!metricsA || !metricsB || !resultsA || !resultsB) return null;
 
-  const getAvg = (results, key) => {
-    if (!results || results.length === 0) return 0;
-    return results.reduce((acc, r) => acc + (r[key] || 0), 0) / results.length;
-  };
+  const avgsA = calculateAverages(resultsA);
+  const avgsB = calculateAverages(resultsB);
 
   const stats = [
     {
       label: 'Avg. Waiting Time',
-      valA: getAvg(resultsA, 'waitingTime'),
-      valB: getAvg(resultsB, 'waitingTime'),
+      valA: avgsA.avgWaiting,
+      valB: avgsB.avgWaiting,
       unit: 'ms',
       lowerIsBetter: true,
       icon: Clock,
     },
     {
       label: 'Avg. Turnaround Time',
-      valA: getAvg(resultsA, 'turnaroundTime'),
-      valB: getAvg(resultsB, 'turnaroundTime'),
+      valA: avgsA.avgTurnaround,
+      valB: avgsB.avgTurnaround,
       unit: 'ms',
       lowerIsBetter: true,
       icon: Layers,
     },
     {
       label: 'Avg. Response Time',
-      valA: getAvg(resultsA, 'responseTime'),
-      valB: getAvg(resultsB, 'responseTime'),
+      valA: avgsA.avgResponse,
+      valB: avgsB.avgResponse,
       unit: 'ms',
       lowerIsBetter: true,
       icon: MousePointer2,
     },
     {
       label: 'CPU Utilization',
-      valA: ((metricsA.totalTime - (metricsA.idleTime || 0)) / metricsA.totalTime) * 100,
-      valB: ((metricsB.totalTime - (metricsB.idleTime || 0)) / metricsB.totalTime) * 100,
+      valA: calculateUtilization(getTotalTime(metricsA), metricsA.idleTime),
+      valB: calculateUtilization(getTotalTime(metricsB), metricsB.idleTime),
       unit: '%',
       lowerIsBetter: false,
       icon: Activity,
     },
     {
       label: 'Throughput',
-      valA: resultsA.length / metricsA.totalTime,
-      valB: resultsB.length / metricsB.totalTime,
+      valA: calculateThroughput(resultsA.length, getTotalTime(metricsA)),
+      valB: calculateThroughput(resultsB.length, getTotalTime(metricsB)),
       unit: 'p/s',
       lowerIsBetter: false,
       icon: Zap,
     },
     {
       label: 'Context Switches',
-      valA: metricsA.contextSwitches || 0,
-      valB: metricsB.contextSwitches || 0,
+      valA: getContextSwitches(metricsA),
+      valB: getContextSwitches(metricsB),
       unit: '',
       lowerIsBetter: true,
       icon: Layers,
+    },
+    {
+      label: 'Total Simulation Time',
+      valA: getTotalTime(metricsA),
+      valB: getTotalTime(metricsB),
+      unit: 's',
+      lowerIsBetter: true,
+      icon: Clock,
     }
   ];
 

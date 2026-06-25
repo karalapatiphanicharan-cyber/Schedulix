@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SectionTitle from '../components/SectionTitle';
 import { useProcessManager } from '../hooks/useProcessManager';
 import { useSimulation } from '../hooks/useSimulation';
@@ -45,8 +45,10 @@ const Compare = () => {
 
   const handleRunComparison = () => {
     if (processes.length === 0) return;
-    simA.runSimulation(processes, algoA, quantumA);
-    simB.runSimulation(processes, algoB, quantumB);
+    handleReset();
+    const clonedProcesses = JSON.parse(JSON.stringify(processes));
+    simA.runSimulation(clonedProcesses, algoA, quantumA);
+    simB.runSimulation(clonedProcesses, algoB, quantumB);
   };
 
   const handleReset = () => {
@@ -65,6 +67,10 @@ const Compare = () => {
       setProcessToDelete(null);
     }
   };
+
+  useEffect(() => {
+    handleReset();
+  }, [processes]);
 
   return (
     <ErrorBoundary>
@@ -167,7 +173,7 @@ const Compare = () => {
                   onUpdate={updateProcess}
                   onDelete={handleDeleteProcess}
                   currentTime={Math.max(simA.currentTime, simB.currentTime)}
-                  schedule={null} // Don't show progress in the shared table for simplicity or pick one
+                  schedule={[simA.schedule, simB.schedule]}
                   playbackState={isIdle ? 'idle' : 'running'}
                 />
               ) : (
@@ -204,6 +210,8 @@ const Compare = () => {
                     results={simA.results}
                     metrics={simA.metrics}
                     playbackState={simA.playbackState}
+                    gridClassName="grid grid-cols-1 md:grid-cols-2 gap-8"
+                    cardClassName="p-8"
                   />
                 </div>
               </div>
@@ -233,6 +241,8 @@ const Compare = () => {
                     results={simB.results}
                     metrics={simB.metrics}
                     playbackState={simB.playbackState}
+                    gridClassName="grid grid-cols-1 md:grid-cols-2 gap-8"
+                    cardClassName="p-8"
                   />
                 </div>
               </div>
