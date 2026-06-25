@@ -210,8 +210,8 @@ const Compare = () => {
                     results={simA.results}
                     metrics={simA.metrics}
                     playbackState={simA.playbackState}
-                    gridClassName="grid grid-cols-1 md:grid-cols-2 gap-8"
-                    cardClassName="p-8"
+                    gridClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                    cardClassName="p-5"
                   />
                 </div>
               </div>
@@ -241,8 +241,8 @@ const Compare = () => {
                     results={simB.results}
                     metrics={simB.metrics}
                     playbackState={simB.playbackState}
-                    gridClassName="grid grid-cols-1 md:grid-cols-2 gap-8"
-                    cardClassName="p-8"
+                    gridClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                    cardClassName="p-5"
                   />
                 </div>
               </div>

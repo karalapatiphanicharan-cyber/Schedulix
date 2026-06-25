@@ -26,11 +26,11 @@ const StatCard = ({ label, value, unit, icon: Icon, description, isPlaceholder, 
       <Icon size={56} />
     </div>
 
-    <div className="flex items-center space-x-2 mb-4">
-      <div className="p-2 bg-brand-blue/10 rounded-lg text-brand-blue">
+    <div className="flex items-start space-x-2 mb-4">
+      <div className="p-2 bg-brand-blue/10 rounded-lg text-brand-blue shrink-0">
         <Icon size={16} />
       </div>
-      <p className="text-brand-gray text-xs font-black uppercase tracking-widest leading-none">{label}</p>
+      <p className="text-brand-gray text-xs font-black uppercase tracking-wider leading-tight min-w-0">{label}</p>
     </div>
 
     <div className="flex items-baseline space-x-1">
@@ -57,7 +57,7 @@ const StatisticsPanel = ({
   results = [],
   metrics = null,
   playbackState = 'idle',
-  gridClassName = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6",
+  gridClassName = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4",
   cardClassName = "p-6"
 }) => {
   const isSimulationStarted = playbackState !== 'idle';
